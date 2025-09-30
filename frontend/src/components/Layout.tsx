@@ -209,32 +209,41 @@ const Layout = ({ children }: LayoutProps) => {
             
             <ListItem disablePadding>
               <Tooltip title={isCollapsed ? "My Posts" : ""} placement="right">
-                <ListItemButton sx={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
+                <ListItemButton 
+                  component={RouterLink} 
+                  to="/my-posts"
+                  selected={location.pathname === '/my-posts'}
+                  onClick={() => isMobile && setMobileOpen(false)}
+                  sx={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+                >
                   <ListItemIcon sx={{ minWidth: isCollapsed ? 'auto' : 40 }}>
                     <ArticleIcon />
                   </ListItemIcon>
                   {!isCollapsed && (
-                    <>
-                      <ListItemText 
-                        primary="My Posts" 
-                        primaryTypographyProps={{ fontWeight: 600, fontSize: '0.9375rem' }}
-                      />
-                      <Chip label="Soon" size="small" color="primary" sx={{ height: 20, fontSize: '0.7rem' }} />
-                    </>
+                    <ListItemText 
+                      primary="My Posts" 
+                      primaryTypographyProps={{ fontWeight: 600, fontSize: '0.9375rem' }}
+                    />
                   )}
                 </ListItemButton>
               </Tooltip>
             </ListItem>
             
             <ListItem disablePadding>
-              <Tooltip title={isCollapsed ? "Saved" : ""} placement="right">
-                <ListItemButton sx={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}>
+              <Tooltip title={isCollapsed ? "All Posts" : ""} placement="right">
+                <ListItemButton 
+                  component={RouterLink} 
+                  to="/posts"
+                  selected={location.pathname === '/posts'}
+                  onClick={() => isMobile && setMobileOpen(false)}
+                  sx={{ justifyContent: isCollapsed ? 'center' : 'flex-start' }}
+                >
                   <ListItemIcon sx={{ minWidth: isCollapsed ? 'auto' : 40 }}>
                     <BookmarkIcon />
                   </ListItemIcon>
                   {!isCollapsed && (
                     <ListItemText 
-                      primary="Saved" 
+                      primary="All Posts" 
                       primaryTypographyProps={{ fontWeight: 600, fontSize: '0.9375rem' }}
                     />
                   )}

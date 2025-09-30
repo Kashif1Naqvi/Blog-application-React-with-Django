@@ -169,10 +169,13 @@ class CommentViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def reply(self, request, pk=None):
+        print("trigger.............................")
         """Reply to a comment"""
         parent_comment = self.get_object()
+        print("parent_comment", parent_comment)
         serializer = CommentSerializer(data=request.data, context={'request': request})
         if serializer.is_valid():
+            print("parent_comment", parent_comment)
             serializer.save(
                 author=request.user,
                 post=parent_comment.post,

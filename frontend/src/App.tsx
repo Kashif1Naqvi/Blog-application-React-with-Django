@@ -6,6 +6,10 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ProfilePage from './pages/ProfilePage';
+import PostsListPage from './pages/PostsListPage';
+import PostDetailPage from './pages/PostDetailPage';
+import PostFormPage from './pages/PostFormPage';
+import MyPostsPage from './pages/MyPostsPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import './App.css';
 
@@ -105,7 +109,6 @@ const theme = createTheme({
     '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
     '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',
     '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',
-    '0 25px 50px -12px rgb(0 0 0 / 0.25)',
     '0 25px 50px -12px rgb(0 0 0 / 0.25)',
     '0 25px 50px -12px rgb(0 0 0 / 0.25)',
     '0 25px 50px -12px rgb(0 0 0 / 0.25)',
@@ -305,6 +308,32 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/posts" element={<PostsListPage />} />
+              <Route path="/posts/:id" element={<PostDetailPage />} />
+              <Route 
+                path="/posts/create" 
+                element={
+                  <ProtectedRoute>
+                    <PostFormPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/posts/edit/:id" 
+                element={
+                  <ProtectedRoute>
+                    <PostFormPage />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route 
+                path="/my-posts" 
+                element={
+                  <ProtectedRoute>
+                    <MyPostsPage />
+                  </ProtectedRoute>
+                } 
+              />
               <Route 
                 path="/profile" 
                 element={
