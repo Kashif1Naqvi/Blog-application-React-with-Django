@@ -2,62 +2,111 @@ import {
   Box, 
   Typography, 
   Button, 
-  Paper, 
   Card, 
   CardContent, 
   CardMedia, 
   Grid, 
   Chip, 
   Avatar, 
-  Divider,
   Stack,
-  Container
+  Container,
+  IconButton,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import CreateIcon from '@mui/icons-material/Create';
+import ExploreIcon from '@mui/icons-material/Explore';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import ShareIcon from '@mui/icons-material/Share';
 
 // Sample blog post data
-const samplePosts = [
+const featuredPosts = [
   {
     id: 1,
-    title: "Getting Started with React",
-    excerpt: "A comprehensive beginner's guide to React development and modern web applications...",
-    image: "https://images.unsplash.com/photo-1633356122102-3fe601e05bd2?q=80&w=500&auto=format&fit=crop",
-    author: "John Doe",
-    date: "September 28, 2025",
+    title: "Mastering React Hooks",
+    excerpt: "Deep dive into React Hooks and learn how to build powerful components...",
+    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=600&auto=format&fit=crop",
+    author: { name: "Sarah Johnson", avatar: "https://i.pravatar.cc/150?img=1" },
+    date: "2 days ago",
     category: "React",
-    readTime: "5 min read",
-    likes: 142,
-    comments: 23
+    readTime: "8 min",
+    likes: 234,
+    comments: 45,
+    views: 1289,
   },
   {
     id: 2,
-    title: "Django REST Framework Best Practices",
-    excerpt: "Learn how to structure your APIs for scalability, maintainability, and production...",
-    image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=500&auto=format&fit=crop",
-    author: "Jane Smith",
-    date: "September 25, 2025",
+    title: "Building Scalable APIs",
+    excerpt: "Learn best practices for creating robust REST APIs with Node.js...",
+    image: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?q=80&w=600&auto=format&fit=crop",
+    author: { name: "Michael Chen", avatar: "https://i.pravatar.cc/150?img=2" },
+    date: "3 days ago",
     category: "Backend",
-    readTime: "8 min read",
-    likes: 89,
-    comments: 15
+    readTime: "10 min",
+    likes: 189,
+    comments: 32,
+    views: 967,
   },
   {
     id: 3,
-    title: "Modern CSS Techniques for 2025",
-    excerpt: "Exploring the latest CSS features and how to use them effectively in your projects...",
-    image: "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?q=80&w=500&auto=format&fit=crop",
-    author: "Alex Johnson",
-    date: "September 21, 2025",
+    title: "Modern CSS Techniques",
+    excerpt: "Explore the latest CSS features including Grid and animations...",
+    image: "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?q=80&w=600&auto=format&fit=crop",
+    author: { name: "Emma Davis", avatar: "https://i.pravatar.cc/150?img=3" },
+    date: "5 days ago",
     category: "CSS",
-    readTime: "4 min read",
-    likes: 67,
-    comments: 12
-  }
+    readTime: "6 min",
+    likes: 156,
+    comments: 28,
+    views: 743,
+  },
+  {
+    id: 4,
+    title: "TypeScript Patterns",
+    excerpt: "Master essential design patterns in TypeScript for better code...",
+    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80&w=600&auto=format&fit=crop",
+    author: { name: "Alex Turner", avatar: "https://i.pravatar.cc/150?img=4" },
+    date: "1 week ago",
+    category: "TypeScript",
+    readTime: "12 min",
+    likes: 298,
+    comments: 56,
+    views: 1543,
+  },
+  {
+    id: 5,
+    title: "Web Performance Tips",
+    excerpt: "Practical strategies to improve your website's loading speed...",
+    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600&auto=format&fit=crop",
+    author: { name: "Jessica Lee", avatar: "https://i.pravatar.cc/150?img=5" },
+    date: "1 week ago",
+    category: "Performance",
+    readTime: "9 min",
+    likes: 412,
+    comments: 67,
+    views: 2134,
+  },
+  {
+    id: 6,
+    title: "Getting Started Docker",
+    excerpt: "A beginner-friendly introduction to containerization...",
+    image: "https://images.unsplash.com/photo-1605745341112-85968b19335b?q=80&w=600&auto=format&fit=crop",
+    author: { name: "David Park", avatar: "https://i.pravatar.cc/150?img=6" },
+    date: "2 weeks ago",
+    category: "DevOps",
+    readTime: "11 min",
+    likes: 267,
+    comments: 41,
+    views: 1456,
+  },
 ];
 
 const HomePage = () => {
@@ -66,359 +115,644 @@ const HomePage = () => {
   return (
     <Box>
       {/* Hero Section */}
-      <Paper
-        elevation={0}
+      <Box
         sx={{
-          p: { xs: 4, md: 6 },
-          mb: 5,
-          borderRadius: 4,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
           position: 'relative',
+          mb: 6,
           overflow: 'hidden',
-          '&::before': {
-            content: '""',
+          borderRadius: 3,
+          background: 'linear-gradient(135deg, #fffdfd 0%, #2151cc 100%)',
+          color: 'white',
+        }}
+      >
+        <Box
+          sx={{
             position: 'absolute',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
-            opacity: 0.4
-          }
-        }}
-      >
-        <Box sx={{ position: 'relative', zIndex: 1, maxWidth: 800 }}>
-          <Typography 
-            variant="h3" 
-            component="h1" 
-            gutterBottom 
-            sx={{ 
-              fontWeight: 800,
-              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-              mb: 2
-            }}
-          >
-            {isAuthenticated 
-              ? `Welcome back, ${user?.username}! 👋`
-              : 'Welcome to Blog App 📝'
-            }
-          </Typography>
-          
-          <Typography 
-            variant="h6" 
-            paragraph 
-            sx={{ 
-              mb: 4, 
-              opacity: 0.95,
-              lineHeight: 1.7,
-              fontSize: { xs: '1rem', sm: '1.15rem' }
-            }}
-          >
-            {isAuthenticated
-              ? 'Continue sharing your thoughts and ideas with our community. What will you write about today?'
-              : 'A platform for writers and readers to connect, share ideas, and explore new perspectives. Join our community today!'
-            }
-          </Typography>
-          
-          {!isAuthenticated && (
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-              <Button 
-                variant="contained" 
-                component={RouterLink} 
-                to="/register"
-                size="large"
+            opacity: 0.1,
+            background: `radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
+                         radial-gradient(circle at 80% 80%, white 1px, transparent 1px)`,
+            backgroundSize: '50px 50px, 80px 80px',
+            animation: 'float 20s ease-in-out infinite',
+          }}
+        />
+
+        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 6, md: 10 } }}>
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={7}>
+              <Chip
+                label={isAuthenticated ? `Welcome back, ${user?.username}!` : "New Platform"}
                 sx={{
-                  bgcolor: 'white',
-                  color: '#667eea',
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.05rem',
-                  '&:hover': {
-                    bgcolor: 'rgba(255, 255, 255, 0.9)',
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
-                  }
-                }}
-              >
-                Get Started Free
-              </Button>
-              <Button 
-                variant="outlined" 
-                component={RouterLink} 
-                to="/login"
-                size="large"
-                sx={{
-                  borderColor: 'white',
+                  mb: 2,
+                  bgcolor: 'rgba(255, 255, 255, 0.2)',
                   color: 'white',
-                  borderWidth: 2,
-                  px: 4,
-                  py: 1.5,
-                  fontSize: '1.05rem',
-                  '&:hover': {
-                    borderColor: 'white',
-                    bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    borderWidth: 2,
-                  }
+                  backdropFilter: 'blur(10px)',
+                  fontWeight: 600,
+                  fontSize: '0.8125rem',
+                }}
+              />
+              
+              <Typography 
+                variant="h2" 
+                sx={{ 
+                  fontWeight: 800,
+                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+                  mb: 2,
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.02em',
                 }}
               >
-                Sign In
-              </Button>
-            </Stack>
-          )}
-          
-          {isAuthenticated && (
-            <Button 
-              variant="contained" 
-              size="large"
-              sx={{
-                bgcolor: 'white',
-                color: '#667eea',
-                px: 4,
-                py: 1.5,
-                fontSize: '1.05rem',
-                '&:hover': {
-                  bgcolor: 'rgba(255, 255, 255, 0.9)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
+                Share Your Ideas,
+                <br />
+                Inspire the World
+              </Typography>
+              
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  mb: 3,
+                  opacity: 0.95,
+                  lineHeight: 1.6,
+                  fontSize: { xs: '0.95rem', md: '1.05rem' },
+                  maxWidth: 520,
+                }}
+              >
+                {isAuthenticated
+                  ? 'Continue sharing your thoughts with our growing community.'
+                  : 'Join thousands of writers and readers in our community.'
                 }
-              }}
-            >
-              Create New Post
-            </Button>
-          )}
-        </Box>
-      </Paper>
+              </Typography>
+              
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                {isAuthenticated ? (
+                  <>
+                    <Button 
+                      variant="contained"
+                      component={RouterLink} 
+                      to="/posts/create"
+                      size="large"
+                      startIcon={<CreateIcon />}
+                      sx={{
+                        bgcolor: 'white',
+                        color: '#0d9488',
+                        px: 3.5,
+                        py: 1.5,
+                        fontWeight: 700,
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                        '&:hover': {
+                          bgcolor: 'rgba(255, 255, 255, 0.95)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      Create Post
+                    </Button>
+                    <Button 
+                      variant="outlined"
+                      component={RouterLink} 
+                      to="/posts"
+                      size="large"
+                      startIcon={<ExploreIcon />}
+                      sx={{
+                        borderColor: 'white',
+                        color: 'white',
+                        borderWidth: 2,
+                        px: 3.5,
+                        py: 1.5,
+                        fontWeight: 600,
+                        '&:hover': {
+                          borderWidth: 2,
+                          bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        },
+                      }}
+                    >
+                      Explore
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button 
+                      variant="contained"
+                      component={RouterLink} 
+                      to="/register"
+                      size="large"
+                      startIcon={<CreateIcon />}
+                      sx={{
+                        bgcolor: 'white',
+                        color: '#0d9488',
+                        px: 3.5,
+                        py: 1.5,
+                        fontWeight: 700,
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                        '&:hover': {
+                          bgcolor: 'rgba(255, 255, 255, 0.95)',
+                          transform: 'translateY(-2px)',
+                        },
+                      }}
+                    >
+                      Get Started
+                    </Button>
+                    <Button 
+                      variant="outlined"
+                      component={RouterLink} 
+                      to="/posts"
+                      size="large"
+                      startIcon={<AutoStoriesIcon />}
+                      sx={{
+                        borderColor: 'white',
+                        color: 'white',
+                        borderWidth: 2,
+                        px: 3.5,
+                        py: 1.5,
+                        fontWeight: 600,
+                        '&:hover': {
+                          borderWidth: 2,
+                          bgcolor: 'rgba(255, 255, 255, 0.1)',
+                        },
+                      }}
+                    >
+                      Browse
+                    </Button>
+                  </>
+                )}
+              </Stack>
+            </Grid>
+
+            <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  width: 280,
+                  height: 280,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Box
+                  sx={{
+                    position: 'absolute',
+                    width: '100%',
+                    height: '100%',
+                    borderRadius: '50%',
+                    background: 'rgba(255, 255, 255, 0.1)',
+                    backdropFilter: 'blur(40px)',
+                    animation: 'pulse 4s ease-in-out infinite',
+                  }}
+                />
+                <AutoStoriesIcon sx={{ fontSize: 140, color: 'white', opacity: 0.9, zIndex: 1 }} />
+              </Box>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
 
       {/* Featured Posts Section */}
-      <Box sx={{ mb: 6 }}>
-        <Box sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          mb: 3 
-        }}>
-          <Box>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 0.5 }}>
-              <TrendingUpIcon color="primary" />
-              <Typography variant="h4" component="h2" fontWeight={700}>
-                Featured Posts
-              </Typography>
-            </Stack>
-            <Typography variant="body2" color="text.secondary">
-              Discover trending stories from our community
-            </Typography>
-          </Box>
-          
-          <Button 
-            color="primary"
-            sx={{ display: { xs: 'none', sm: 'flex' } }}
+      <Container maxWidth="lg">
+        <Box sx={{ mb: 5 }}>
+          <Stack 
+            direction="row" 
+            justifyContent="space-between" 
+            alignItems="center" 
+            sx={{ mb: 3 }}
           >
-            View All
-          </Button>
-        </Box>
-        
-        <Grid container spacing={3}>
-          {samplePosts.map(post => (
-            <Grid item xs={12} sm={6} lg={4} key={post.id}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
-                  display: 'flex', 
-                  flexDirection: 'column',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-8px)',
-                    boxShadow: '0 20px 40px rgba(0, 0, 0, 0.12)',
-                    '& .post-image': {
-                      transform: 'scale(1.05)',
-                    }
-                  }
-                }}
-              >
-                <Box sx={{ overflow: 'hidden', position: 'relative' }}>
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={post.image}
-                    alt={post.title}
-                    className="post-image"
-                    sx={{ 
-                      transition: 'transform 0.3s ease',
-                    }}
-                  />
-                  <Chip 
-                    label={post.category} 
-                    size="small" 
-                    sx={{ 
-                      position: 'absolute',
-                      top: 12,
-                      right: 12,
-                      bgcolor: 'white',
-                      color: 'primary.main',
-                      fontWeight: 700,
-                      fontSize: '0.75rem',
-                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
-                    }} 
-                  />
+            <Box>
+              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 0.5 }}>
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 2,
+                    background: 'linear-gradient(135deg, #0d9488 0%, #10b981 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(13, 148, 136, 0.3)',
+                  }}
+                >
+                  <TrendingUpIcon sx={{ color: 'white', fontSize: 24 }} />
                 </Box>
-                
-                <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 2 }}>
-                    <AccessTimeIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                    <Typography variant="caption" color="text.secondary" fontWeight={500}>
-                      {post.readTime}
-                    </Typography>
-                  </Stack>
-                  
-                  <Typography 
-                    variant="h6" 
-                    component="h3" 
-                    gutterBottom
+                <Typography 
+                  variant="h4" 
+                  sx={{ 
+                    fontWeight: 800,
+                    fontSize: { xs: '1.5rem', md: '2rem' },
+                    background: 'linear-gradient(135deg, #0d9488 0%, #10b981 100%)',
+                    backgroundClip: 'text',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                  }}
+                >
+                  Featured Stories
+                </Typography>
+              </Stack>
+              <Typography variant="body2" color="text.secondary" sx={{ ml: 7 }}>
+                Discover trending content from our community
+              </Typography>
+            </Box>
+            
+            <Button 
+              component={RouterLink}
+              to="/posts"
+              endIcon={<ArrowForwardIcon />}
+              sx={{ 
+                display: { xs: 'none', sm: 'flex' },
+                fontWeight: 600,
+                px: 2.5,
+              }}
+            >
+              View All
+            </Button>
+          </Stack>
+          
+          {/* FIXED GRID - Now properly shows 3 columns */}
+          <Grid container spacing={2.5}>
+            {featuredPosts.map((post, index) => (
+              <Grid 
+                item 
+                xs={12}      // 1 column on mobile (< 600px)
+                sm={6}       // 2 columns on tablet (600px - 900px)
+                md={4}       // 3 columns on desktop (≥ 900px)
+                key={post.id}
+              >
+                <Card 
+                  component={RouterLink}
+                  to={`/posts/${post.id}`}
+                  sx={{ 
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
+                    border: '1px solid',
+                    borderColor: 'grey.200',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+                    borderRadius: 2.5,
+                    overflow: 'hidden',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      transform: 'translateY(-6px)',
+                      boxShadow: '0 16px 32px rgba(13, 148, 136, 0.15)',
+                      borderColor: 'primary.main',
+                      '& .post-image': {
+                        transform: 'scale(1.05)',
+                      },
+                    },
+                  }}
+                >
+                  {/* Compact Image */}
+                  <Box 
                     sx={{ 
-                      fontWeight: 700, 
-                      mb: 1.5,
-                      lineHeight: 1.4,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
+                      position: 'relative',
+                      overflow: 'hidden',
+                      height: 140,
+                      bgcolor: 'grey.100',
                     }}
                   >
-                    {post.title}
-                  </Typography>
-                  
-                  <Typography 
-                    variant="body2" 
-                    color="text.secondary"
-                    sx={{ 
-                      mb: 2,
-                      lineHeight: 1.7,
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden'
-                    }}
-                  >
-                    {post.excerpt}
-                  </Typography>
-                  
-                  <Divider sx={{ my: 2 }} />
-                  
-                  <Stack 
-                    direction="row" 
-                    justifyContent="space-between" 
-                    alignItems="center"
-                  >
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Avatar 
-                        sx={{ 
-                          width: 32, 
-                          height: 32,
-                          bgcolor: 'primary.main',
-                          fontSize: '0.875rem',
-                          fontWeight: 600
+                    <CardMedia
+                      component="img"
+                      height="140"
+                      image={post.image}
+                      alt={post.title}
+                      className="post-image"
+                      sx={{
+                        transition: 'transform 0.4s ease',
+                        objectFit: 'cover',
+                      }}
+                    />
+                    
+                    {/* Category Badge */}
+                    <Chip 
+                      label={post.category} 
+                      size="small" 
+                      sx={{ 
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        bgcolor: 'rgba(13, 148, 136, 0.95)',
+                        color: 'white',
+                        fontWeight: 700,
+                        fontSize: '0.65rem',
+                        height: 22,
+                        backdropFilter: 'blur(8px)',
+                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                      }} 
+                    />
+
+                    {/* Quick Actions */}
+                    <Stack 
+                      direction="row" 
+                      spacing={0.5}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                      }}
+                    >
+                      <IconButton
+                        size="small"
+                        sx={{
+                          bgcolor: 'rgba(255, 255, 255, 0.95)',
+                          backdropFilter: 'blur(8px)',
+                          width: 28,
+                          height: 28,
+                          '&:hover': {
+                            bgcolor: 'white',
+                            transform: 'scale(1.1)',
+                          },
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
                         }}
                       >
-                        {post.author.charAt(0)}
-                      </Avatar>
-                      <Box>
-                        <Typography variant="body2" fontWeight={600} sx={{ lineHeight: 1.2 }}>
-                          {post.author}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {post.date}
-                        </Typography>
-                      </Box>
+                        <FavoriteBorderIcon sx={{ fontSize: 14, color: 'error.main' }} />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        sx={{
+                          bgcolor: 'rgba(255, 255, 255, 0.95)',
+                          backdropFilter: 'blur(8px)',
+                          width: 28,
+                          height: 28,
+                          '&:hover': {
+                            bgcolor: 'white',
+                            transform: 'scale(1.1)',
+                          },
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <BookmarkBorderIcon sx={{ fontSize: 14, color: 'primary.main' }} />
+                      </IconButton>
                     </Stack>
+                  </Box>
+                  
+                  {/* Compact Content */}
+                  <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
+                    {/* Title */}
+                    <Typography 
+                      variant="h6" 
+                      sx={{ 
+                        fontWeight: 700, 
+                        mb: 1,
+                        lineHeight: 1.3,
+                        fontSize: '0.95rem',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        minHeight: '2.6em',
+                        color: 'text.primary',
+                      }}
+                    >
+                      {post.title}
+                    </Typography>
                     
-                    <Stack direction="row" spacing={2}>
+                    {/* Excerpt */}
+                    <Typography 
+                      variant="body2" 
+                      color="text.secondary"
+                      sx={{ 
+                        mb: 1.5,
+                        lineHeight: 1.5,
+                        fontSize: '0.8125rem',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        flexGrow: 1,
+                        minHeight: '2.4em',
+                      }}
+                    >
+                      {post.excerpt}
+                    </Typography>
+                    
+                    {/* Inline Stats */}
+                    <Stack 
+                      direction="row" 
+                      spacing={1.5}
+                      alignItems="center"
+                      sx={{ 
+                        py: 1,
+                        px: 1.5,
+                        mx: -1.5,
+                        mb: 1.5,
+                        bgcolor: 'grey.50',
+                        borderRadius: 1.5,
+                      }}
+                    >
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <FavoriteIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                        <AccessTimeIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
+                          {post.readTime}
+                        </Typography>
+                      </Stack>
+                      
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <FavoriteIcon sx={{ fontSize: 12, color: 'error.main' }} />
+                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
                           {post.likes}
                         </Typography>
                       </Stack>
+                      
                       <Stack direction="row" spacing={0.5} alignItems="center">
-                        <ChatBubbleOutlineIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                        <Typography variant="caption" color="text.secondary" fontWeight={600}>
+                        <ChatBubbleOutlineIcon sx={{ fontSize: 12, color: 'primary.main' }} />
+                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
                           {post.comments}
                         </Typography>
                       </Stack>
-                    </Stack>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
 
-      {/* CTA Section */}
-      {!isAuthenticated && (
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 4, md: 6 },
-            borderRadius: 4,
-            background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-            color: 'white',
-            textAlign: 'center',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-        >
-          <Container maxWidth="md">
-            <Typography 
-              variant="h4" 
-              component="h2" 
-              fontWeight={800} 
-              gutterBottom
-              sx={{ fontSize: { xs: '1.75rem', md: '2.125rem' } }}
-            >
-              Ready to share your ideas with the world?
-            </Typography>
-            
-            <Typography 
-              variant="h6" 
-              paragraph 
-              sx={{ 
-                maxWidth: 600, 
-                mx: 'auto', 
-                mb: 4,
-                opacity: 0.95,
-                lineHeight: 1.7,
-                fontSize: { xs: '1rem', md: '1.15rem' }
-              }}
-            >
-              Join thousands of writers and readers in our growing community. Create an account today to start posting!
-            </Typography>
-            
+                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 'auto' }}>
+                        <VisibilityIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
+                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
+                          {post.views}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                    
+                    {/* Compact Author Info */}
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Avatar 
+                        src={post.author.avatar}
+                        sx={{ 
+                          width: 28, 
+                          height: 28,
+                          border: '2px solid',
+                          borderColor: 'grey.200',
+                        }}
+                      >
+                        {post.author.name.charAt(0)}
+                      </Avatar>
+                      <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography 
+                          variant="body2" 
+                          fontWeight={600} 
+                          sx={{ 
+                            lineHeight: 1.2, 
+                            fontSize: '0.75rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {post.author.name}
+                        </Typography>
+                        <Typography 
+                          variant="caption" 
+                          color="text.secondary"
+                          sx={{ fontSize: '0.65rem' }}
+                        >
+                          {post.date}
+                        </Typography>
+                      </Box>
+
+                      <IconButton 
+                        size="small"
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          color: 'text.secondary',
+                          '&:hover': {
+                            color: 'primary.main',
+                            bgcolor: 'primary.50',
+                          },
+                        }}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                      >
+                        <ShareIcon sx={{ fontSize: 14 }} />
+                      </IconButton>
+                    </Stack>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+
+          {/* View All Button for Mobile */}
+          <Box sx={{ display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', mt: 3 }}>
             <Button 
-              variant="contained" 
-              component={RouterLink} 
-              to="/register"
+              component={RouterLink}
+              to="/posts"
+              variant="outlined"
               size="large"
-              sx={{ 
-                bgcolor: 'white', 
-                color: '#f5576c',
-                px: 5,
-                py: 1.75,
-                fontSize: '1.05rem',
-                fontWeight: 700,
-                '&:hover': {
-                  bgcolor: 'rgba(255,255,255,0.95)',
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 12px 24px rgba(0, 0, 0, 0.2)',
-                }
-              }}
+              endIcon={<ArrowForwardIcon />}
+              fullWidth
+              sx={{ maxWidth: 400 }}
             >
-              Create an Account
+              View All Posts
             </Button>
-          </Container>
-        </Paper>
-      )}
+          </Box>
+        </Box>
+
+        {/* CTA Section */}
+        {!isAuthenticated && (
+          <Box
+            sx={{
+              p: { xs: 4, md: 6 },
+              borderRadius: 3,
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: 'white',
+              textAlign: 'center',
+              position: 'relative',
+              overflow: 'hidden',
+              mb: 4,
+            }}
+          >
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                opacity: 0.1,
+                background: 'radial-gradient(circle, white 1px, transparent 1px)',
+                backgroundSize: '30px 30px',
+              }}
+            />
+
+            <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
+              <Typography 
+                variant="h3" 
+                sx={{ 
+                  fontWeight: 800,
+                  mb: 2,
+                  fontSize: { xs: '1.5rem', md: '2rem' },
+                }}
+              >
+                Ready to Share Your Story?
+              </Typography>
+              
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  maxWidth: 560, 
+                  mx: 'auto', 
+                  mb: 3,
+                  opacity: 0.95,
+                  lineHeight: 1.6,
+                  fontSize: { xs: '0.95rem', md: '1rem' },
+                }}
+              >
+                Join thousands of writers and readers in our growing community!
+              </Typography>
+              
+              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+                <Button 
+                  variant="contained"
+                  component={RouterLink} 
+                  to="/register"
+                  size="large"
+                  startIcon={<CreateIcon />}
+                  sx={{ 
+                    bgcolor: 'white', 
+                    color: '#10b981',
+                    px: 4,
+                    py: 1.5,
+                    fontWeight: 700,
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
+                    '&:hover': {
+                      bgcolor: 'rgba(255,255,255,0.95)',
+                      transform: 'translateY(-2px)',
+                    },
+                  }}
+                >
+                  Create Account
+                </Button>
+                <Button 
+                  variant="outlined"
+                  component={RouterLink} 
+                  to="/login"
+                  size="large"
+                  sx={{ 
+                    borderColor: 'white',
+                    color: 'white',
+                    borderWidth: 2,
+                    px: 4,
+                    py: 1.5,
+                    fontWeight: 600,
+                    '&:hover': {
+                      borderWidth: 2,
+                      bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    },
+                  }}
+                >
+                  Sign In
+                </Button>
+              </Stack>
+            </Container>
+          </Box>
+        )}
+      </Container>
     </Box>
   );
 };
