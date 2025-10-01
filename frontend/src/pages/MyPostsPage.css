@@ -1,0 +1,32 @@
+.my-posts-page {
+  min-height: 100vh;
+  background-color: #f9fafb;
+}
+
+.my-posts-page .post-card {
+  transition: all 0.3s ease;
+}
+
+.my-posts-page .post-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(13, 148, 136, 0.15) !important;
+}
+
+.my-posts-page .nav-tabs .nav-link {
+  color: #6b7280;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+}
+
+.my-posts-page .nav-tabs .nav-link.active {
+  color: #0d9488;
+  border-bottom-color: #0d9488;
+  background: none;
+}
+
+.my-posts-page .nav-tabs .nav-link:hover {
+  border-bottom-color: #0d9488;
+  color: #0d9488;
+}

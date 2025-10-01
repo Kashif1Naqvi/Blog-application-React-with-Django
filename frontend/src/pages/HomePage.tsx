@@ -1,17 +1,5 @@
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Card, 
-  CardContent, 
-  CardMedia, 
-  Grid, 
-  Chip, 
-  Avatar, 
-  Stack,
-  Container,
-  IconButton,
-} from '@mui/material';
+import { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Badge, Button, Spinner, Alert } from 'react-bootstrap';
 import { Link as RouterLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -25,735 +13,363 @@ import CreateIcon from '@mui/icons-material/Create';
 import ExploreIcon from '@mui/icons-material/Explore';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import ShareIcon from '@mui/icons-material/Share';
-
-// Sample blog post data
-const featuredPosts = [
-  {
-    id: 1,
-    title: "Mastering React Hooks",
-    excerpt: "Deep dive into React Hooks and learn how to build powerful components...",
-    image: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=600&auto=format&fit=crop",
-    author: { name: "Sarah Johnson", avatar: "https://i.pravatar.cc/150?img=1" },
-    date: "2 days ago",
-    category: "React",
-    readTime: "8 min",
-    likes: 234,
-    comments: 45,
-    views: 1289,
-  },
-  {
-    id: 2,
-    title: "Building Scalable APIs",
-    excerpt: "Learn best practices for creating robust REST APIs with Node.js...",
-    image: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?q=80&w=600&auto=format&fit=crop",
-    author: { name: "Michael Chen", avatar: "https://i.pravatar.cc/150?img=2" },
-    date: "3 days ago",
-    category: "Backend",
-    readTime: "10 min",
-    likes: 189,
-    comments: 32,
-    views: 967,
-  },
-  {
-    id: 3,
-    title: "Modern CSS Techniques",
-    excerpt: "Explore the latest CSS features including Grid and animations...",
-    image: "https://images.unsplash.com/photo-1507721999472-8ed4421c4af2?q=80&w=600&auto=format&fit=crop",
-    author: { name: "Emma Davis", avatar: "https://i.pravatar.cc/150?img=3" },
-    date: "5 days ago",
-    category: "CSS",
-    readTime: "6 min",
-    likes: 156,
-    comments: 28,
-    views: 743,
-  },
-  {
-    id: 4,
-    title: "TypeScript Patterns",
-    excerpt: "Master essential design patterns in TypeScript for better code...",
-    image: "https://images.unsplash.com/photo-1516116216624-53e697fedbea?q=80&w=600&auto=format&fit=crop",
-    author: { name: "Alex Turner", avatar: "https://i.pravatar.cc/150?img=4" },
-    date: "1 week ago",
-    category: "TypeScript",
-    readTime: "12 min",
-    likes: 298,
-    comments: 56,
-    views: 1543,
-  },
-  {
-    id: 5,
-    title: "Web Performance Tips",
-    excerpt: "Practical strategies to improve your website's loading speed...",
-    image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=600&auto=format&fit=crop",
-    author: { name: "Jessica Lee", avatar: "https://i.pravatar.cc/150?img=5" },
-    date: "1 week ago",
-    category: "Performance",
-    readTime: "9 min",
-    likes: 412,
-    comments: 67,
-    views: 2134,
-  },
-  {
-    id: 6,
-    title: "Getting Started Docker",
-    excerpt: "A beginner-friendly introduction to containerization...",
-    image: "https://images.unsplash.com/photo-1605745341112-85968b19335b?q=80&w=600&auto=format&fit=crop",
-    author: { name: "David Park", avatar: "https://i.pravatar.cc/150?img=6" },
-    date: "2 weeks ago",
-    category: "DevOps",
-    readTime: "11 min",
-    likes: 267,
-    comments: 41,
-    views: 1456,
-  },
-];
+import { IconButton, Avatar } from '@mui/material';
+import { getPosts, likePost, bookmarkPost, type Post } from '../services/blogService';
+import './HomePage.css';
 
 const HomePage = () => {
   const { isAuthenticated, user } = useAuth();
+  const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadFeaturedPosts();
+  }, []);
+
+  const loadFeaturedPosts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getPosts({
+        status: 'published',
+        ordering: '-views_count',
+        page: 1,
+      });
+      setFeaturedPosts(data.results.slice(0, 6));
+    } catch (err) {
+      console.error('Error loading featured posts:', err);
+      setError('Failed to load featured posts');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLikePost = async (postId: number) => {
+    try {
+      const result = await likePost(postId);
+      setFeaturedPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { ...post, is_liked: result.status === 'liked', likes_count: result.likes_count }
+            : post
+        )
+      );
+    } catch (err) {
+      console.error('Error liking post:', err);
+    }
+  };
+
+  const handleBookmarkPost = async (postId: number) => {
+    try {
+      const result = await bookmarkPost(postId);
+      setFeaturedPosts(prevPosts => 
+        prevPosts.map(post => 
+          post.id === postId 
+            ? { ...post, is_bookmarked: result.status === 'bookmarked' }
+            : post
+        )
+      );
+    } catch (err) {
+      console.error('Error bookmarking post:', err);
+    }
+  };
 
   return (
-    <Box>
+    <div className="home-page">
       {/* Hero Section */}
-      <Box
-        sx={{
-          position: 'relative',
-          mb: 6,
-          overflow: 'hidden',
-          borderRadius: 3,
-          background: 'linear-gradient(135deg, #fffdfd 0%, #2151cc 100%)',
-          color: 'white',
-        }}
-      >
-        <Box
-          sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            opacity: 0.1,
-            background: `radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
-                         radial-gradient(circle at 80% 80%, white 1px, transparent 1px)`,
-            backgroundSize: '50px 50px, 80px 80px',
-            animation: 'float 20s ease-in-out infinite',
-          }}
-        />
-
-        <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1, py: { xs: 6, md: 10 } }}>
-          <Grid container spacing={4} alignItems="center">
-            <Grid item xs={12} md={7}>
-              <Chip
-                label={isAuthenticated ? `Welcome back, ${user?.username}!` : "New Platform"}
-                sx={{
-                  mb: 2,
-                  bgcolor: 'rgba(255, 255, 255, 0.2)',
-                  color: 'white',
-                  backdropFilter: 'blur(10px)',
-                  fontWeight: 600,
-                  fontSize: '0.8125rem',
-                }}
-              />
+      <div className="hero-section">
+        <Container>
+          <Row className="align-items-center py-5">
+            <Col lg={7}>
+              <div className="hero-badge mb-3">
+                {isAuthenticated ? `Welcome back, ${user?.username}!` : "Join Our Community"}
+              </div>
               
-              <Typography 
-                variant="h2" 
-                sx={{ 
-                  fontWeight: 800,
-                  fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
-                  mb: 2,
-                  lineHeight: 1.1,
-                  letterSpacing: '-0.02em',
-                }}
-              >
+              <h1 className="hero-title mb-3">
                 Share Your Ideas,
                 <br />
                 Inspire the World
-              </Typography>
+              </h1>
               
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  mb: 3,
-                  opacity: 0.95,
-                  lineHeight: 1.6,
-                  fontSize: { xs: '0.95rem', md: '1.05rem' },
-                  maxWidth: 520,
-                }}
-              >
+              <p className="hero-subtitle mb-4">
                 {isAuthenticated
                   ? 'Continue sharing your thoughts with our growing community.'
                   : 'Join thousands of writers and readers in our community.'
                 }
-              </Typography>
+              </p>
               
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <div className="d-flex gap-3 flex-wrap">
                 {isAuthenticated ? (
                   <>
                     <Button 
-                      variant="contained"
-                      component={RouterLink} 
+                      variant="primary"
+                      size="lg"
+                      as={RouterLink} 
                       to="/posts/create"
-                      size="large"
-                      startIcon={<CreateIcon />}
-                      sx={{
-                        bgcolor: 'white',
-                        color: '#0d9488',
-                        px: 3.5,
-                        py: 1.5,
-                        fontWeight: 700,
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-                        '&:hover': {
-                          bgcolor: 'rgba(255, 255, 255, 0.95)',
-                          transform: 'translateY(-2px)',
-                        },
-                      }}
+                      className="px-4"
                     >
+                      <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
                       Create Post
                     </Button>
                     <Button 
-                      variant="outlined"
-                      component={RouterLink} 
+                      variant="outline-primary"
+                      size="lg"
+                      as={RouterLink} 
                       to="/posts"
-                      size="large"
-                      startIcon={<ExploreIcon />}
-                      sx={{
-                        borderColor: 'white',
-                        color: 'white',
-                        borderWidth: 2,
-                        px: 3.5,
-                        py: 1.5,
-                        fontWeight: 600,
-                        '&:hover': {
-                          borderWidth: 2,
-                          bgcolor: 'rgba(255, 255, 255, 0.1)',
-                        },
-                      }}
+                      className="px-4"
                     >
+                      <ExploreIcon style={{ fontSize: 20, marginRight: 8 }} />
                       Explore
                     </Button>
                   </>
                 ) : (
                   <>
                     <Button 
-                      variant="contained"
-                      component={RouterLink} 
+                      variant="primary"
+                      size="lg"
+                      as={RouterLink} 
                       to="/register"
-                      size="large"
-                      startIcon={<CreateIcon />}
-                      sx={{
-                        bgcolor: 'white',
-                        color: '#0d9488',
-                        px: 3.5,
-                        py: 1.5,
-                        fontWeight: 700,
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-                        '&:hover': {
-                          bgcolor: 'rgba(255, 255, 255, 0.95)',
-                          transform: 'translateY(-2px)',
-                        },
-                      }}
+                      className="px-4"
                     >
+                      <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
                       Get Started
                     </Button>
                     <Button 
-                      variant="outlined"
-                      component={RouterLink} 
+                      variant="outline-primary"
+                      size="lg"
+                      as={RouterLink} 
                       to="/posts"
-                      size="large"
-                      startIcon={<AutoStoriesIcon />}
-                      sx={{
-                        borderColor: 'white',
-                        color: 'white',
-                        borderWidth: 2,
-                        px: 3.5,
-                        py: 1.5,
-                        fontWeight: 600,
-                        '&:hover': {
-                          borderWidth: 2,
-                          bgcolor: 'rgba(255, 255, 255, 0.1)',
-                        },
-                      }}
+                      className="px-4"
                     >
+                      <AutoStoriesIcon style={{ fontSize: 20, marginRight: 8 }} />
                       Browse
                     </Button>
                   </>
                 )}
-              </Stack>
-            </Grid>
-
-            <Grid item xs={12} md={5} sx={{ display: { xs: 'none', md: 'flex' }, justifyContent: 'center' }}>
-              <Box
-                sx={{
-                  position: 'relative',
-                  width: 280,
-                  height: 280,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    width: '100%',
-                    height: '100%',
-                    borderRadius: '50%',
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(40px)',
-                    animation: 'pulse 4s ease-in-out infinite',
-                  }}
-                />
-                <AutoStoriesIcon sx={{ fontSize: 140, color: 'white', opacity: 0.9, zIndex: 1 }} />
-              </Box>
-            </Grid>
-          </Grid>
+              </div>
+            </Col>
+            <Col lg={5} className="d-none d-lg-block text-center">
+              <div className="hero-icon-wrapper">
+                <AutoStoriesIcon className="hero-icon" />
+              </div>
+            </Col>
+          </Row>
         </Container>
-      </Box>
+      </div>
 
-      {/* Featured Posts Section */}
-      <Container maxWidth="lg">
-        <Box sx={{ mb: 5 }}>
-          <Stack 
-            direction="row" 
-            justifyContent="space-between" 
-            alignItems="center" 
-            sx={{ mb: 3 }}
-          >
-            <Box>
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 0.5 }}>
-                <Box
-                  sx={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 2,
-                    background: 'linear-gradient(135deg, #0d9488 0%, #10b981 100%)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(13, 148, 136, 0.3)',
-                  }}
-                >
-                  <TrendingUpIcon sx={{ color: 'white', fontSize: 24 }} />
-                </Box>
-                <Typography 
-                  variant="h4" 
-                  sx={{ 
-                    fontWeight: 800,
-                    fontSize: { xs: '1.5rem', md: '2rem' },
-                    background: 'linear-gradient(135deg, #0d9488 0%, #10b981 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                  }}
-                >
-                  Featured Stories
-                </Typography>
-              </Stack>
-              <Typography variant="body2" color="text.secondary" sx={{ ml: 7 }}>
-                Discover trending content from our community
-              </Typography>
-            </Box>
-            
-            <Button 
-              component={RouterLink}
-              to="/posts"
-              endIcon={<ArrowForwardIcon />}
-              sx={{ 
-                display: { xs: 'none', sm: 'flex' },
-                fontWeight: 600,
-                px: 2.5,
-              }}
-            >
-              View All
-            </Button>
-          </Stack>
+      {/* Featured Posts */}
+      <Container className="py-5">
+        <div className="section-header d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <div className="d-flex align-items-center gap-3 mb-2">
+              <div className="section-icon">
+                <TrendingUpIcon />
+              </div>
+              <h2 className="section-title mb-0">Featured Stories</h2>
+            </div>
+            <p className="section-subtitle">Discover trending content from our community</p>
+          </div>
           
-          {/* FIXED GRID - Now properly shows 3 columns */}
-          <Grid container spacing={2.5}>
+          <Button 
+            variant="link"
+            as={RouterLink}
+            to="/posts"
+            className="d-none d-sm-flex align-items-center text-decoration-none"
+          >
+            View All
+            <ArrowForwardIcon style={{ fontSize: 18, marginLeft: 4 }} />
+          </Button>
+        </div>
+
+        {loading ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" variant="primary" />
+          </div>
+        ) : error ? (
+          <Alert variant="danger">{error}</Alert>
+        ) : featuredPosts.length === 0 ? (
+          <div className="text-center py-5">
+            <AutoStoriesIcon style={{ fontSize: 80, color: 'var(--color-muted)' }} />
+            <h5 className="mt-3" style={{ color: 'var(--color-muted)' }}>No posts available yet</h5>
+            <p style={{ color: 'var(--color-muted)' }}>Be the first to create a post!</p>
+            {isAuthenticated && (
+              <Button variant="primary" as={RouterLink} to="/posts/create">
+                <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
+                Create Your First Post
+              </Button>
+            )}
+          </div>
+        ) : (
+          <Row className="g-4">
             {featuredPosts.map((post, index) => (
-              <Grid 
-                item 
-                xs={12}      // 1 column on mobile (< 600px)
-                sm={6}       // 2 columns on tablet (600px - 900px)
-                md={4}       // 3 columns on desktop (≥ 900px)
-                key={post.id}
-              >
+              <Col lg={4} md={6} key={post.id}>
                 <Card 
-                  component={RouterLink}
+                  className="post-card h-100"
+                  as={RouterLink}
                   to={`/posts/${post.id}`}
-                  sx={{ 
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    textDecoration: 'none',
-                    cursor: 'pointer',
-                    border: '1px solid',
-                    borderColor: 'grey.200',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-                    borderRadius: 2.5,
-                    overflow: 'hidden',
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-6px)',
-                      boxShadow: '0 16px 32px rgba(13, 148, 136, 0.15)',
-                      borderColor: 'primary.main',
-                      '& .post-image': {
-                        transform: 'scale(1.05)',
-                      },
-                    },
+                  style={{ 
+                    animationDelay: `${index * 0.1}s`,
                   }}
                 >
-                  {/* Compact Image */}
-                  <Box 
-                    sx={{ 
-                      position: 'relative',
-                      overflow: 'hidden',
-                      height: 140,
-                      bgcolor: 'grey.100',
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="140"
-                      image={post.image}
-                      alt={post.title}
-                      className="post-image"
-                      sx={{
-                        transition: 'transform 0.4s ease',
-                        objectFit: 'cover',
-                      }}
-                    />
+                  <div className="post-image-wrapper">
+                    {post.featured_image ? (
+                      <Card.Img 
+                        variant="top" 
+                        src={post.featured_image} 
+                        alt={post.title}
+                        className="post-image"
+                      />
+                    ) : (
+                      <div className="post-image-placeholder">
+                        <AutoStoriesIcon style={{ fontSize: 48 }} />
+                      </div>
+                    )}
                     
-                    {/* Category Badge */}
-                    <Chip 
-                      label={post.category} 
-                      size="small" 
-                      sx={{ 
-                        position: 'absolute',
-                        top: 8,
-                        left: 8,
-                        bgcolor: 'rgba(13, 148, 136, 0.95)',
-                        color: 'white',
-                        fontWeight: 700,
-                        fontSize: '0.65rem',
-                        height: 22,
-                        backdropFilter: 'blur(8px)',
-                        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-                      }} 
-                    />
+                    {post.tags.length > 0 && (
+                      <Badge bg="primary" className="post-badge">
+                        {post.tags[0].name}
+                      </Badge>
+                    )}
 
-                    {/* Quick Actions */}
-                    <Stack 
-                      direction="row" 
-                      spacing={0.5}
-                      sx={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                      }}
-                    >
-                      <IconButton
-                        size="small"
-                        sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.95)',
-                          backdropFilter: 'blur(8px)',
-                          width: 28,
-                          height: 28,
-                          '&:hover': {
-                            bgcolor: 'white',
-                            transform: 'scale(1.1)',
-                          },
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
-                        <FavoriteBorderIcon sx={{ fontSize: 14, color: 'error.main' }} />
-                      </IconButton>
-                      <IconButton
-                        size="small"
-                        sx={{
-                          bgcolor: 'rgba(255, 255, 255, 0.95)',
-                          backdropFilter: 'blur(8px)',
-                          width: 28,
-                          height: 28,
-                          '&:hover': {
-                            bgcolor: 'white',
-                            transform: 'scale(1.1)',
-                          },
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
-                        <BookmarkBorderIcon sx={{ fontSize: 14, color: 'primary.main' }} />
-                      </IconButton>
-                    </Stack>
-                  </Box>
-                  
-                  {/* Compact Content */}
-                  <CardContent sx={{ p: 2, display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-                    {/* Title */}
-                    <Typography 
-                      variant="h6" 
-                      sx={{ 
-                        fontWeight: 700, 
-                        mb: 1,
-                        lineHeight: 1.3,
-                        fontSize: '0.95rem',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        minHeight: '2.6em',
-                        color: 'text.primary',
-                      }}
-                    >
-                      {post.title}
-                    </Typography>
-                    
-                    {/* Excerpt */}
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary"
-                      sx={{ 
-                        mb: 1.5,
-                        lineHeight: 1.5,
-                        fontSize: '0.8125rem',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        flexGrow: 1,
-                        minHeight: '2.4em',
-                      }}
-                    >
-                      {post.excerpt}
-                    </Typography>
-                    
-                    {/* Inline Stats */}
-                    <Stack 
-                      direction="row" 
-                      spacing={1.5}
-                      alignItems="center"
-                      sx={{ 
-                        py: 1,
-                        px: 1.5,
-                        mx: -1.5,
-                        mb: 1.5,
-                        bgcolor: 'grey.50',
-                        borderRadius: 1.5,
-                      }}
-                    >
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <AccessTimeIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
-                          {post.readTime}
-                        </Typography>
-                      </Stack>
-                      
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <FavoriteIcon sx={{ fontSize: 12, color: 'error.main' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
-                          {post.likes}
-                        </Typography>
-                      </Stack>
-                      
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <ChatBubbleOutlineIcon sx={{ fontSize: 12, color: 'primary.main' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
-                          {post.comments}
-                        </Typography>
-                      </Stack>
-
-                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 'auto' }}>
-                        <VisibilityIcon sx={{ fontSize: 12, color: 'text.secondary' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem" color="text.secondary">
-                          {post.views}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                    
-                    {/* Compact Author Info */}
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Avatar 
-                        src={post.author.avatar}
-                        sx={{ 
-                          width: 28, 
-                          height: 28,
-                          border: '2px solid',
-                          borderColor: 'grey.200',
-                        }}
-                      >
-                        {post.author.name.charAt(0)}
-                      </Avatar>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography 
-                          variant="body2" 
-                          fontWeight={600} 
-                          sx={{ 
-                            lineHeight: 1.2, 
-                            fontSize: '0.75rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
+                    {isAuthenticated && (
+                      <div className="post-actions">
+                        <IconButton
+                          size="small"
+                          className="action-btn"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleLikePost(post.id);
                           }}
                         >
-                          {post.author.name}
-                        </Typography>
-                        <Typography 
-                          variant="caption" 
-                          color="text.secondary"
-                          sx={{ fontSize: '0.65rem' }}
+                          {post.is_liked ? (
+                            <FavoriteIcon style={{ fontSize: 16, color: 'var(--color-error)' }} />
+                          ) : (
+                            <FavoriteBorderIcon style={{ fontSize: 16, color: 'var(--color-error)' }} />
+                          )}
+                        </IconButton>
+                        <IconButton
+                          size="small"
+                          className="action-btn"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            handleBookmarkPost(post.id);
+                          }}
                         >
-                          {post.date}
-                        </Typography>
-                      </Box>
-
-                      <IconButton 
-                        size="small"
-                        sx={{
-                          width: 28,
-                          height: 28,
-                          color: 'text.secondary',
-                          '&:hover': {
-                            color: 'primary.main',
-                            bgcolor: 'primary.50',
-                          },
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
+                          {post.is_bookmarked ? (
+                            <BookmarkIcon style={{ fontSize: 16, color: 'var(--color-primary)' }} />
+                          ) : (
+                            <BookmarkBorderIcon style={{ fontSize: 16, color: 'var(--color-primary)' }} />
+                          )}
+                        </IconButton>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <Card.Body className="d-flex flex-column">
+                    <Card.Title className="post-title">
+                      {post.title}
+                    </Card.Title>
+                    
+                    <Card.Text className="post-excerpt">
+                      {post.excerpt}
+                    </Card.Text>
+                    
+                    <div className="post-stats">
+                      <div className="stat-item">
+                        <AccessTimeIcon style={{ fontSize: 14 }} />
+                        <small>{post.reading_time}m</small>
+                      </div>
+                      <div className="stat-item">
+                        <FavoriteIcon style={{ fontSize: 14, color: 'var(--color-error)' }} />
+                        <small>{post.likes_count}</small>
+                      </div>
+                      <div className="stat-item">
+                        <ChatBubbleOutlineIcon style={{ fontSize: 14, color: 'var(--color-primary)' }} />
+                        <small>{post.comments_count}</small>
+                      </div>
+                      <div className="stat-item ms-auto">
+                        <VisibilityIcon style={{ fontSize: 14 }} />
+                        <small>{post.views_count}</small>
+                      </div>
+                    </div>
+                    
+                    <div className="post-author mt-3">
+                      <Avatar 
+                        src={post.author.profile_picture || undefined}
+                        style={{ width: 32, height: 32 }}
                       >
-                        <ShareIcon sx={{ fontSize: 14 }} />
+                        {post.author.username.charAt(0).toUpperCase()}
+                      </Avatar>
+                      <div className="author-info">
+                        <div className="author-name">{post.author.username}</div>
+                        <small className="author-date">
+                          {new Date(post.created_at).toLocaleDateString()}
+                        </small>
+                      </div>
+                      <IconButton size="small" className="ms-auto">
+                        <ShareIcon style={{ fontSize: 16 }} />
                       </IconButton>
-                    </Stack>
-                  </CardContent>
+                    </div>
+                  </Card.Body>
                 </Card>
-              </Grid>
+              </Col>
             ))}
-          </Grid>
+          </Row>
+        )}
 
-          {/* View All Button for Mobile */}
-          <Box sx={{ display: { xs: 'flex', sm: 'none' }, justifyContent: 'center', mt: 3 }}>
+        {!loading && featuredPosts.length > 0 && (
+          <div className="text-center mt-4 d-sm-none">
             <Button 
-              component={RouterLink}
+              variant="outline-primary"
+              as={RouterLink}
               to="/posts"
-              variant="outlined"
-              size="large"
-              endIcon={<ArrowForwardIcon />}
-              fullWidth
-              sx={{ maxWidth: 400 }}
+              className="w-100"
             >
               View All Posts
+              <ArrowForwardIcon style={{ fontSize: 18, marginLeft: 8 }} />
             </Button>
-          </Box>
-        </Box>
-
-        {/* CTA Section */}
-        {!isAuthenticated && (
-          <Box
-            sx={{
-              p: { xs: 4, md: 6 },
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: 'white',
-              textAlign: 'center',
-              position: 'relative',
-              overflow: 'hidden',
-              mb: 4,
-            }}
-          >
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                opacity: 0.1,
-                background: 'radial-gradient(circle, white 1px, transparent 1px)',
-                backgroundSize: '30px 30px',
-              }}
-            />
-
-            <Container maxWidth="md" sx={{ position: 'relative', zIndex: 1 }}>
-              <Typography 
-                variant="h3" 
-                sx={{ 
-                  fontWeight: 800,
-                  mb: 2,
-                  fontSize: { xs: '1.5rem', md: '2rem' },
-                }}
-              >
-                Ready to Share Your Story?
-              </Typography>
-              
-              <Typography 
-                variant="h6" 
-                sx={{ 
-                  maxWidth: 560, 
-                  mx: 'auto', 
-                  mb: 3,
-                  opacity: 0.95,
-                  lineHeight: 1.6,
-                  fontSize: { xs: '0.95rem', md: '1rem' },
-                }}
-              >
-                Join thousands of writers and readers in our growing community!
-              </Typography>
-              
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
-                <Button 
-                  variant="contained"
-                  component={RouterLink} 
-                  to="/register"
-                  size="large"
-                  startIcon={<CreateIcon />}
-                  sx={{ 
-                    bgcolor: 'white', 
-                    color: '#10b981',
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 700,
-                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
-                    '&:hover': {
-                      bgcolor: 'rgba(255,255,255,0.95)',
-                      transform: 'translateY(-2px)',
-                    },
-                  }}
-                >
-                  Create Account
-                </Button>
-                <Button 
-                  variant="outlined"
-                  component={RouterLink} 
-                  to="/login"
-                  size="large"
-                  sx={{ 
-                    borderColor: 'white',
-                    color: 'white',
-                    borderWidth: 2,
-                    px: 4,
-                    py: 1.5,
-                    fontWeight: 600,
-                    '&:hover': {
-                      borderWidth: 2,
-                      bgcolor: 'rgba(255, 255, 255, 0.1)',
-                    },
-                  }}
-                >
-                  Sign In
-                </Button>
-              </Stack>
-            </Container>
-          </Box>
+          </div>
         )}
       </Container>
-    </Box>
+
+      {/* CTA Section */}
+      {!isAuthenticated && (
+        <div className="cta-section">
+          <Container className="text-center">
+            <h2 className="cta-title">Ready to Share Your Story?</h2>
+            <p className="cta-subtitle">
+              Join thousands of writers and readers in our growing community!
+            </p>
+            <div className="d-flex gap-3 justify-content-center flex-wrap">
+              <Button 
+                variant="primary"
+                size="lg"
+                as={RouterLink} 
+                to="/register"
+                className="px-4"
+              >
+                <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
+                Create Account
+              </Button>
+              <Button 
+                variant="outline-light"
+                size="lg"
+                as={RouterLink} 
+                to="/login"
+                className="px-4"
+              >
+                Sign In
+              </Button>
+            </div>
+          </Container>
+        </div>
+      )}
+    </div>
   );
 };
 

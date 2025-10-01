@@ -1,189 +1,172 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
-import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Paper,
-  Alert,
-  Link,
-  InputAdornment,
-  IconButton,
-} from '@mui/material';
+import { useState } from 'react';
+import { Container, Row, Col, Card, Form, Button, Alert, FloatingLabel } from 'react-bootstrap';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import EmailIcon from '@mui/icons-material/Email';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { useAuth } from '../contexts/AuthContext';
-
-interface LocationState {
-  message?: string;
-}
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import { Avatar, IconButton, InputAdornment } from '@mui/material';
+import './AuthPages.css';
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { login } = useAuth();
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-
-  useEffect(() => {
-    const state = location.state as LocationState | null;
-    if (state?.message) {
-      setMessage(state.message);
-    }
-  }, [location]);
-
-  const formik = useFormik({
-    initialValues: {
-      username: '',
-      password: '',
-    },
-    validationSchema: Yup.object({
-      username: Yup.string().required('Username is required'),
-      password: Yup.string().required('Password is required'),
-    }),
-    onSubmit: async (values) => {
-      try {
-        const success = await login(values.username, values.password);
-        if (success) {
-          navigate('/');
-        } else {
-          setError('Login failed. Please check your credentials.');
-        }
-      } catch (err: any) {
-        console.error('Login error:', err);
-        if (err.response?.data?.detail) {
-          setError(err.response.data.detail);
-        } else {
-          setError('Login failed. Please try again.');
-        }
-      }
-    },
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
   });
 
-  const toggleShowPassword = () => {
-    setShowPassword(!showPassword);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+    setError('');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      await login(formData.username, formData.password);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.response?.data?.detail || 'Invalid credentials. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        maxWidth: 450,
-        mx: 'auto',
-        py: 4,
-      }}
-    >
-      <Paper
-        elevation={2}
-        sx={{
-          p: 4,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          width: '100%',
-        }}
-      >
-        <Typography component="h1" variant="h4" fontWeight="bold" gutterBottom>
-          Welcome Back
-        </Typography>
-        
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3, textAlign: 'center' }}>
-          Sign in to continue to your account
-        </Typography>
-        
-        {message && (
-          <Alert severity="success" sx={{ width: '100%', mb: 2 }}>
-            {message}
-          </Alert>
-        )}
-        
-        {error && (
-          <Alert severity="error" sx={{ width: '100%', mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        
-        <Box component="form" onSubmit={formik.handleSubmit} noValidate sx={{ width: '100%' }}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            id="username"
-            label="Username"
-            name="username"
-            autoComplete="username"
-            autoFocus
-            value={formik.values.username}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.username && Boolean(formik.errors.username)}
-            helperText={formik.touched.username && formik.errors.username}
-            sx={{ mb: 2 }}
-          />
-          
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            name="password"
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            id="password"
-            autoComplete="current-password"
-            value={formik.values.password}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            error={formik.touched.password && Boolean(formik.errors.password)}
-            helperText={formik.touched.password && formik.errors.password}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={toggleShowPassword}
-                    edge="end"
+    <div className="auth-page">
+      <Container>
+        <Row className="justify-content-center align-items-center min-vh-100 py-5">
+          <Col lg={5} md={7} sm={10}>
+            <Card className="border-0 shadow-lg">
+              <Card.Body className="p-4 p-md-5">
+                {/* Icon */}
+                <div className="text-center mb-4">
+                  <Avatar
+                    sx={{
+                      width: 64,
+                      height: 64,
+                      margin: '0 auto',
+                      background: 'linear-gradient(135deg, #0d9488 0%, #10b981 100%)',
+                    }}
                   >
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 1 }}>
-            <Link component={RouterLink} to="/forgot-password" variant="body2">
-              Forgot password?
-            </Link>
-          </Box>
-          
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            size="large"
-            sx={{ mt: 3, mb: 2, py: 1.2 }}
-            disabled={formik.isSubmitting}
-          >
-            {formik.isSubmitting ? 'Signing In...' : 'Sign In'}
-          </Button>
-          
-          <Box sx={{ mt: 2, textAlign: 'center' }}>
-            <Typography variant="body2">
-              Don't have an account?{' '}
-              <Link component={RouterLink} to="/register" variant="body2" fontWeight="medium">
-                Register now
-              </Link>
-            </Typography>
-          </Box>
-        </Box>
-      </Paper>
-    </Box>
+                    <LockOutlinedIcon style={{ fontSize: 32 }} />
+                  </Avatar>
+                  <h2 className="fw-bold mt-3 mb-1">Welcome Back</h2>
+                  <p className="text-muted">Sign in to continue to your account</p>
+                </div>
+
+                {/* Error Alert */}
+                {error && (
+                  <Alert variant="danger" dismissible onClose={() => setError('')}>
+                    {error}
+                  </Alert>
+                )}
+
+                {/* Login Form */}
+                <Form onSubmit={handleSubmit}>
+                  <Form.Group className="mb-3">
+                    <FloatingLabel label="Username or Email">
+                      <Form.Control
+                        type="text"
+                        name="username"
+                        placeholder="Username or Email"
+                        value={formData.username}
+                        onChange={handleChange}
+                        required
+                        autoComplete="username"
+                        disabled={loading}
+                      />
+                    </FloatingLabel>
+                  </Form.Group>
+
+                  <Form.Group className="mb-3">
+                    <FloatingLabel label="Password">
+                      <Form.Control
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        placeholder="Password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        autoComplete="current-password"
+                        disabled={loading}
+                      />
+                    </FloatingLabel>
+                    <div className="position-absolute end-0 top-50 translate-middle-y me-3">
+                      <IconButton
+                        size="small"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </IconButton>
+                    </div>
+                  </Form.Group>
+
+                  <Form.Group className="mb-4">
+                    <Form.Check
+                      type="checkbox"
+                      id="remember"
+                      label="Remember me"
+                    />
+                  </Form.Group>
+
+                  <Button
+                    variant="primary"
+                    type="submit"
+                    size="lg"
+                    className="w-100 fw-semibold"
+                    disabled={loading}
+                    style={{
+                      background: 'linear-gradient(135deg, #0d9488 0%, #10b981 100%)',
+                      border: 'none',
+                    }}
+                  >
+                    {loading ? 'Signing in...' : 'Sign In'}
+                  </Button>
+                </Form>
+
+                {/* Links */}
+                <div className="text-center mt-4">
+                  <p className="text-muted mb-2">
+                    <Link to="/forgot-password" className="text-decoration-none">
+                      Forgot password?
+                    </Link>
+                  </p>
+                  <p className="text-muted">
+                    Don't have an account?{' '}
+                    <Link to="/register" className="text-primary fw-semibold text-decoration-none">
+                      Sign up
+                    </Link>
+                  </p>
+                </div>
+              </Card.Body>
+            </Card>
+
+            {/* Footer */}
+            <div className="text-center mt-4">
+              <AutoStoriesIcon style={{ fontSize: 32, color: '#0d9488' }} />
+              <p className="text-muted mt-2">
+                <small>© 2025 Blog App. All rights reserved.</small>
+              </p>
+            </div>
+          </Col>
+        </Row>
+      </Container>
+    </div>
   );
 };
 

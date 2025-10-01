@@ -1,28 +1,6 @@
 import { useState, useEffect } from 'react';
+import { Container, Row, Col, Card, Button, Badge, Nav, Dropdown, Modal, Spinner, Alert } from 'react-bootstrap';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
-import {
-  Box,
-  Typography,
-  Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Grid,
-  Chip,
-  IconButton,
-  Menu,
-  MenuItem,
-  CircularProgress,
-  Alert,
-  Stack,
-  Tabs,
-  Tab,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
@@ -30,17 +8,18 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import CommentIcon from '@mui/icons-material/Comment';
+import ArticleIcon from '@mui/icons-material/Article';
 import { getMyPosts, deletePost, type Post } from '../services/blogService';
+import './MyPostsPage.css';
 
 const MyPostsPage = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [tabValue, setTabValue] = useState(0);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [activeTab, setActiveTab] = useState('all');
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -60,28 +39,6 @@ const MyPostsPage = () => {
     }
   };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, post: Post) => {
-    setAnchorEl(event.currentTarget);
-    setSelectedPost(post);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
-    setSelectedPost(null);
-  };
-
-  const handleEdit = () => {
-    if (selectedPost) {
-      navigate(`/posts/edit/${selectedPost.id}`);
-    }
-    handleMenuClose();
-  };
-
-  const handleDeleteClick = () => {
-    setDeleteDialogOpen(true);
-    handleMenuClose();
-  };
-
   const handleDeleteConfirm = async () => {
     if (!selectedPost) return;
     
@@ -89,7 +46,7 @@ const MyPostsPage = () => {
       setDeleting(true);
       await deletePost(selectedPost.id);
       setPosts(posts.filter(p => p.id !== selectedPost.id));
-      setDeleteDialogOpen(false);
+      setShowDeleteModal(false);
       setSelectedPost(null);
     } catch (err) {
       console.error('Error deleting post:', err);
@@ -99,211 +56,242 @@ const MyPostsPage = () => {
     }
   };
 
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
   const filteredPosts = posts.filter(post => {
-    if (tabValue === 0) return true; // All
-    if (tabValue === 1) return post.status === 'published';
-    if (tabValue === 2) return post.status === 'draft';
+    if (activeTab === 'all') return true;
+    if (activeTab === 'published') return post.status === 'published';
+    if (activeTab === 'drafts') return post.status === 'draft';
     return true;
   });
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
-    <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-        <Box>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
-            My Posts
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Manage your blog posts
-          </Typography>
-        </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          component={RouterLink}
-          to="/posts/create"
-          size="large"
-        >
-          Create New Post
-        </Button>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
-          <Tab label={`All (${posts.length})`} />
-          <Tab label={`Published (${posts.filter(p => p.status === 'published').length})`} />
-          <Tab label={`Drafts (${posts.filter(p => p.status === 'draft').length})`} />
-        </Tabs>
-      </Box>
-
-      {filteredPosts.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No posts found
-          </Typography>
-          <Typography variant="body2" color="text.secondary" paragraph>
-            {tabValue === 2 
-              ? "You don't have any draft posts"
-              : tabValue === 1
-              ? "You haven't published any posts yet"
-              : "Start creating your first post"}
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            component={RouterLink}
+    <div className="my-posts-page">
+      <Container className="py-4">
+        {/* Header */}
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h2 className="fw-bold mb-2">My Posts</h2>
+            <p className="text-muted mb-0">Manage your blog posts</p>
+          </div>
+          <Button 
+            variant="primary" 
+            size="lg"
+            as={RouterLink}
             to="/posts/create"
           >
-            Create Your First Post
+            <AddIcon style={{ fontSize: 20, marginRight: 4 }} />
+            Create New Post
           </Button>
-        </Box>
-      ) : (
-        <Grid container spacing={3}>
-          {filteredPosts.map((post) => (
-            <Grid item xs={12} md={6} key={post.id}>
-              <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-                {post.featured_image && (
-                  <CardMedia
-                    component="img"
-                    height="200"
-                    image={post.featured_image}
-                    alt={post.title}
-                  />
-                )}
-                
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-                    <Box sx={{ flex: 1 }}>
-                      <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
-                        <Chip
-                          label={post.status}
-                          size="small"
-                          color={post.status === 'published' ? 'success' : 'default'}
-                        />
-                        {post.tags.slice(0, 2).map((tag) => (
-                          <Chip key={tag.id} label={tag.name} size="small" variant="outlined" />
-                        ))}
-                      </Stack>
-                      
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
-                        {post.title}
-                      </Typography>
-                    </Box>
-                    
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleMenuOpen(e, post)}
-                    >
-                      <MoreVertIcon />
-                    </IconButton>
-                  </Box>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <Alert variant="danger" dismissible onClose={() => setError(null)}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Tabs */}
+        <Nav variant="tabs" className="mb-4">
+          <Nav.Item>
+            <Nav.Link 
+              active={activeTab === 'all'} 
+              onClick={() => setActiveTab('all')}
+            >
+              All ({posts.length})
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link 
+              active={activeTab === 'published'} 
+              onClick={() => setActiveTab('published')}
+            >
+              Published ({posts.filter(p => p.status === 'published').length})
+            </Nav.Link>
+          </Nav.Item>
+          <Nav.Item>
+            <Nav.Link 
+              active={activeTab === 'drafts'} 
+              onClick={() => setActiveTab('drafts')}
+            >
+              Drafts ({posts.filter(p => p.status === 'draft').length})
+            </Nav.Link>
+          </Nav.Item>
+        </Nav>
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="text-center py-5">
+            <Spinner animation="border" variant="primary" />
+          </div>
+        ) : filteredPosts.length === 0 ? (
+          <div className="text-center py-5">
+            <ArticleIcon style={{ fontSize: 80, color: '#cbd5e1' }} />
+            <h5 className="text-muted mt-3">No posts found</h5>
+            <p className="text-muted">
+              {activeTab === 'drafts' 
+                ? "You don't have any draft posts"
+                : activeTab === 'published'
+                ? "You haven't published any posts yet"
+                : "Start creating your first post"
+              }
+            </p>
+            {activeTab === 'all' && (
+              <Button 
+                variant="primary"
+                as={RouterLink}
+                to="/posts/create"
+              >
+                <AddIcon style={{ fontSize: 20, marginRight: 4 }} />
+                Create Your First Post
+              </Button>
+            )}
+          </div>
+        ) : (
+          <Row className="g-4">
+            {filteredPosts.map((post) => (
+              <Col lg={4} md={12} key={post.id}>
+                <Card className="h-100 border-0 shadow-sm post-card">
+                  {post.featured_image && (
+                    <Card.Img 
+                      variant="top" 
+                      src={post.featured_image} 
+                      alt={post.title}
+                      style={{ height: 200, objectFit: 'cover' }}
+                    />
+                  )}
                   
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      mb: 2,
+                  <Card.Body className="d-flex flex-column">
+                    <div className="d-flex justify-content-between align-items-start mb-3">
+                      <div className="flex-grow-1">
+                        <div className="d-flex gap-2 mb-2 flex-wrap">
+                          <Badge 
+                            bg={post.status === 'published' ? 'success' : 'secondary'}
+                          >
+                            {post.status}
+                          </Badge>
+                          {post.tags.slice(0, 2).map((tag) => (
+                            <Badge key={tag.id} bg="primary" className="fw-normal">
+                              {tag.name}
+                            </Badge>
+                          ))}
+                        </div>
+                        <h5 className="fw-bold mb-2">{post.title}</h5>
+                      </div>
+                      
+                      <Dropdown>
+                        <Dropdown.Toggle 
+                          variant="link" 
+                          className="text-muted p-0"
+                          style={{ textDecoration: 'none' }}
+                        >
+                          <MoreVertIcon />
+                        </Dropdown.Toggle>
+                        <Dropdown.Menu align="end">
+                          <Dropdown.Item 
+                            as={RouterLink} 
+                            to={`/posts/${post.id}`}
+                          >
+                            <VisibilityIcon style={{ fontSize: 18, marginRight: 8 }} />
+                            View
+                          </Dropdown.Item>
+                          <Dropdown.Item 
+                            as={RouterLink} 
+                            to={`/posts/edit/${post.id}`}
+                          >
+                            <EditIcon style={{ fontSize: 18, marginRight: 8 }} />
+                            Edit
+                          </Dropdown.Item>
+                          <Dropdown.Divider />
+                          <Dropdown.Item 
+                            className="text-danger"
+                            onClick={() => {
+                              setSelectedPost(post);
+                              setShowDeleteModal(true);
+                            }}
+                          >
+                            <DeleteIcon style={{ fontSize: 18, marginRight: 8 }} />
+                            Delete
+                          </Dropdown.Item>
+                        </Dropdown.Menu>
+                      </Dropdown>
+                    </div>
+                    
+                    <p className="text-muted mb-3 flex-grow-1" style={{
                       display: '-webkit-box',
                       WebkitLineClamp: 3,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
-                    }}
-                  >
-                    {post.excerpt}
-                  </Typography>
-                  
-                  <Box sx={{ display: 'flex', gap: 3 }}>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <VisibilityIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {post.views_count}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <ThumbUpIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {post.likes_count}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <CommentIcon sx={{ fontSize: 18, color: 'text.secondary' }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {post.comments_count}
-                      </Typography>
-                    </Stack>
-                  </Box>
-                  
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-                    {new Date(post.created_at).toLocaleDateString()}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+                    }}>
+                      {post.excerpt}
+                    </p>
+                    
+                    <div className="d-flex gap-4 text-muted">
+                      <div className="d-flex align-items-center gap-1">
+                        <VisibilityIcon style={{ fontSize: 18 }} />
+                        <small>{post.views_count}</small>
+                      </div>
+                      <div className="d-flex align-items-center gap-1">
+                        <ThumbUpIcon style={{ fontSize: 18 }} />
+                        <small>{post.likes_count}</small>
+                      </div>
+                      <div className="d-flex align-items-center gap-1">
+                        <CommentIcon style={{ fontSize: 18 }} />
+                        <small>{post.comments_count}</small>
+                      </div>
+                    </div>
+                    
+                    <small className="text-muted mt-3">
+                      {new Date(post.created_at).toLocaleDateString()}
+                    </small>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        )}
+      </Container>
 
-      {/* Action Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
+      {/* Delete Confirmation Modal */}
+      <Modal 
+        show={showDeleteModal} 
+        onHide={() => !deleting && setShowDeleteModal(false)}
+        centered
       >
-        <MenuItem onClick={() => selectedPost && navigate(`/posts/${selectedPost.id}`)}>
-          <VisibilityIcon sx={{ mr: 1, fontSize: 20 }} />
-          View
-        </MenuItem>
-        <MenuItem onClick={handleEdit}>
-          <EditIcon sx={{ mr: 1, fontSize: 20 }} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
-          <DeleteIcon sx={{ mr: 1, fontSize: 20 }} />
-          Delete
-        </MenuItem>
-      </Menu>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => !deleting && setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Post?</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete "{selectedPost?.title}"? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Post?</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          Are you sure you want to delete <strong>"{selectedPost?.title}"</strong>? 
+          This action cannot be undone.
+        </Modal.Body>
+        <Modal.Footer>
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowDeleteModal(false)}
+            disabled={deleting}
+          >
             Cancel
           </Button>
-          <Button
+          <Button 
+            variant="danger" 
             onClick={handleDeleteConfirm}
-            color="error"
             disabled={deleting}
-            startIcon={deleting ? <CircularProgress size={20} /> : <DeleteIcon />}
           >
-            {deleting ? 'Deleting...' : 'Delete'}
+            {deleting ? (
+              <>
+                <Spinner animation="border" size="sm" className="me-2" />
+                Deleting...
+              </>
+            ) : (
+              <>
+                <DeleteIcon style={{ fontSize: 18, marginRight: 4 }} />
+                Delete
+              </>
+            )}
           </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+        </Modal.Footer>
+      </Modal>
+    </div>
   );
 };
 

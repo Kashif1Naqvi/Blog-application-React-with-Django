@@ -1,134 +1,62 @@
 import { useState, useEffect } from 'react';
-import {
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Grid,
-  Typography,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  TextField,
-  Paper,
-  Tab,
-  Tabs,
-  Divider
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import { Container, Row, Col, Card, Button, Form, Modal, Badge, Nav, Tab, Spinner, Alert, Image } from 'react-bootstrap';
 import { useAuth } from '../contexts/AuthContext';
 import { updateProfile } from '../services/userService';
-
-// Sample posts data
-const userPosts = [
-  {
-    id: 1,
-    title: "My First Blog Post",
-    excerpt: "This is where I share my initial thoughts...",
-    date: "September 28, 2025",
-    likes: 12,
-    comments: 5
-  },
-  {
-    id: 2,
-    title: "Learning Web Development",
-    excerpt: "My journey through learning web development frameworks...",
-    date: "September 15, 2025",
-    likes: 24,
-    comments: 8
-  }
-];
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`profile-tabpanel-${index}`}
-      aria-labelledby={`profile-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
+import EditIcon from '@mui/icons-material/Edit';
+import PersonIcon from '@mui/icons-material/Person';
+import ArticleIcon from '@mui/icons-material/Article';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
+import './ProfilePage.css';
 
 const ProfilePage = () => {
-  const { user, updateUserInfo } = useAuth();
+  const { user, updateUser } = useAuth();
+  const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [openDialog, setOpenDialog] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [tabValue, setTabValue] = useState(0);
-  const apiBaseUrl = 'http://localhost:8000';
-  
-  const profilePictureUrl = user?.profile_picture
-    ? user.profile_picture.startsWith('http')
-      ? user.profile_picture
-      : `${apiBaseUrl}${user.profile_picture}`
-    : null;
-
-  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
 
   const formik = useFormik({
     initialValues: {
-      username: user?.username || '',
       bio: user?.bio || '',
       profile_picture: null as File | null,
     },
     validationSchema: Yup.object({
-      username: Yup.string().min(3, 'Username must be at least 3 characters'),
       bio: Yup.string().max(500, 'Bio must be 500 characters or less'),
     }),
-    enableReinitialize: true,
     onSubmit: async (values) => {
-      setLoading(true);
       try {
+        setLoading(true);
+        setError('');
+        
         const formData = new FormData();
-        
-        if (values.username !== user?.username) {
-          formData.append('username', values.username);
-        }
-        
-        if (values.bio !== user?.bio) {
-          formData.append('bio', values.bio);
-        }
+        formData.append('bio', values.bio);
         
         if (values.profile_picture) {
           formData.append('profile_picture', values.profile_picture);
         }
         
-        await updateProfile(formData);
-        await updateUserInfo();
-        setOpenDialog(false);
-      } catch (error) {
-        console.error('Failed to update profile:', error);
+        const updatedUser = await updateProfile(formData);
+        updateUser(updatedUser);
+        setSuccess('Profile updated successfully!');
+        setShowEditModal(false);
+        
+        setTimeout(() => setSuccess(''), 3000);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to update profile');
       } finally {
         setLoading(false);
       }
     },
   });
-  
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.currentTarget.files && event.currentTarget.files[0]) {
-      const file = event.currentTarget.files[0];
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.currentTarget.files && e.currentTarget.files[0]) {
+      const file = e.currentTarget.files[0];
       formik.setFieldValue('profile_picture', file);
       
-      // Create preview URL
       const reader = new FileReader();
       reader.onload = () => {
         setImagePreview(reader.result as string);
@@ -136,280 +64,252 @@ const ProfilePage = () => {
       reader.readAsDataURL(file);
     }
   };
-  
-  const handleDialogClose = () => {
-    setOpenDialog(false);
-    formik.resetForm();
-    setImagePreview(null);
-  };
-  
+
+  useEffect(() => {
+    if (user?.profile_picture) {
+      setImagePreview(user.profile_picture);
+    }
+  }, [user]);
+
   if (!user) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
-        <CircularProgress />
-      </Box>
+      <Container className="py-5 text-center">
+        <Spinner animation="border" variant="primary" />
+      </Container>
     );
   }
 
   return (
-    <Box>
-      {/* Profile Header */}
-      <Paper
-        elevation={0}
-        sx={{
-          p: 4,
-          mb: 4,
-          borderRadius: 2,
-          backgroundColor: '#f8f9ff',
-          border: '1px solid #e0e4f0',
-          position: 'relative',
-        }}
-      >
-        <Button 
-          startIcon={<EditIcon />}
-          variant="outlined"
-          size="small"
-          onClick={() => setOpenDialog(true)}
-          sx={{ 
-            position: 'absolute', 
-            top: 16, 
-            right: 16,
-          }}
-        >
-          Edit Profile
-        </Button>
-          
-        <Grid container spacing={4} alignItems="center">
-          <Grid item>
-            <Avatar
-              src={profilePictureUrl || undefined}
-              alt={user.username}
-              sx={{
-                width: 120,
-                height: 120,
-                border: '4px solid white',
-                boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} sm>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-              {user.username}
-            </Typography>
-            <Typography variant="body1" color="text.secondary" gutterBottom>
-              {user.email}
-            </Typography>
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                mt: 1, 
-                fontSize: '1.1rem',
-                fontStyle: user.bio ? 'normal' : 'italic'
-              }}
-            >
-              {user.bio || "No bio provided yet."}
-            </Typography>
-          </Grid>
-        </Grid>
-      </Paper>
-
-      {/* Tabs Section */}
-      <Paper elevation={0} sx={{ borderRadius: 2 }}>
-        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs 
-            value={tabValue} 
-            onChange={handleTabChange} 
-            aria-label="profile tabs"
-          >
-            <Tab label="Posts" id="profile-tab-0" aria-controls="profile-tabpanel-0" />
-            <Tab label="About" id="profile-tab-1" aria-controls="profile-tabpanel-1" />
-            <Tab label="Activity" id="profile-tab-2" aria-controls="profile-tabpanel-2" />
-          </Tabs>
-        </Box>
-        
-        {/* Posts Tab */}
-        <TabPanel value={tabValue} index={0}>
-          <Box sx={{ p: 2 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-              <Typography variant="h6">
-                My Posts ({userPosts.length})
-              </Typography>
-              <Button variant="contained" color="primary">
-                Create New Post
-              </Button>
-            </Box>
-
-            {userPosts.length > 0 ? (
-              <Grid container spacing={3}>
-                {userPosts.map(post => (
-                  <Grid item xs={12} key={post.id}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="h6" gutterBottom>
-                          {post.title}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" paragraph>
-                          {post.excerpt}
-                        </Typography>
-                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                          <Typography variant="caption" color="text.secondary">
-                            Posted on {post.date}
-                          </Typography>
-                          <Box>
-                            <Typography variant="body2" component="span" sx={{ mr: 2 }}>
-                              {post.likes} likes
-                            </Typography>
-                            <Typography variant="body2" component="span">
-                              {post.comments} comments
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            ) : (
-              <Box sx={{ textAlign: 'center', py: 4 }}>
-                <Typography variant="body1" color="text.secondary" gutterBottom>
-                  You haven't created any posts yet.
-                </Typography>
-                <Button variant="contained" color="primary" sx={{ mt: 2 }}>
-                  Create Your First Post
-                </Button>
-              </Box>
-            )}
-          </Box>
-        </TabPanel>
-        
-        {/* About Tab */}
-        <TabPanel value={tabValue} index={1}>
-          <Box sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              About {user.username}
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" fontWeight="bold">Bio</Typography>
-                <Typography variant="body1" paragraph>
-                  {user.bio || "No bio provided yet."}
-                </Typography>
-                
-                <Typography variant="subtitle2" fontWeight="bold">Email</Typography>
-                <Typography variant="body1" paragraph>
-                  {user.email}
-                </Typography>
-                
-                <Typography variant="subtitle2" fontWeight="bold">Member Since</Typography>
-                <Typography variant="body1">
-                  September 2025
-                </Typography>
-              </Grid>
-              
-              <Grid item xs={12} md={6}>
-                <Typography variant="subtitle2" fontWeight="bold">Stats</Typography>
-                <Box sx={{ mt: 1 }}>
-                  <Typography variant="body1">
-                    Posts: {userPosts.length}
-                  </Typography>
-                  <Typography variant="body1">
-                    Comments: 15
-                  </Typography>
-                  <Typography variant="body1">
-                    Likes received: 36
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Box>
-        </TabPanel>
-        
-        {/* Activity Tab */}
-        <TabPanel value={tabValue} index={2}>
-          <Box sx={{ p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              Recent Activity
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-              Activity tracking feature coming soon!
-            </Typography>
-          </Box>
-        </TabPanel>
-      </Paper>
-      
-      {/* Edit Profile Dialog */}
-      <Dialog open={openDialog} onClose={handleDialogClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Edit Profile</DialogTitle>
-        <DialogContent>
-          <Box component="form" noValidate sx={{ mt: 1 }}>
-            <TextField
-              margin="normal"
-              fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              value={formik.values.username}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.username && Boolean(formik.errors.username)}
-              helperText={formik.touched.username && formik.errors.username}
-            />
-            
-            <TextField
-              margin="normal"
-              fullWidth
-              id="bio"
-              label="Bio"
-              name="bio"
-              multiline
-              rows={4}
-              value={formik.values.bio}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={formik.touched.bio && Boolean(formik.errors.bio)}
-              helperText={formik.touched.bio && formik.errors.bio}
-            />
-            
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Profile Picture
-              </Typography>
-              
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Avatar
-                  src={imagePreview || profilePictureUrl || undefined}
-                  alt={user.username}
-                  sx={{ width: 80, height: 80 }}
-                />
-                
-                <Button variant="contained" component="label" size="small">
-                  Upload Image
-                  <input
-                    hidden
-                    accept="image/*"
-                    type="file"
-                    onChange={handleFileChange}
+    <div className="profile-page">
+      {/* Hero Section */}
+      <div className="profile-hero">
+        <Container>
+          <div className="profile-cover" />
+          <div className="profile-header">
+            <div className="profile-avatar-wrapper">
+              <div className="profile-avatar">
+                {user.profile_picture ? (
+                  <Image 
+                    src={user.profile_picture} 
+                    alt={user.username}
+                    roundedCircle
+                    fluid
                   />
+                ) : (
+                  <div className="profile-avatar-placeholder">
+                    <PersonIcon style={{ fontSize: 80, color: '#6b7280' }} />
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            <div className="profile-info">
+              <h2 className="profile-name">{user.username}</h2>
+              <p className="profile-email text-muted">{user.email}</p>
+              {user.bio && (
+                <p className="profile-bio">{user.bio}</p>
+              )}
+              <Button 
+                variant="primary" 
+                size="sm" 
+                onClick={() => setShowEditModal(true)}
+                className="mt-2"
+              >
+                <EditIcon style={{ fontSize: 16, marginRight: 4 }} />
+                Edit Profile
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </div>
+
+      {/* Alerts */}
+      <Container className="mt-3">
+        {success && (
+          <Alert variant="success" dismissible onClose={() => setSuccess('')}>
+            {success}
+          </Alert>
+        )}
+        {error && (
+          <Alert variant="danger" dismissible onClose={() => setError('')}>
+            {error}
+          </Alert>
+        )}
+      </Container>
+
+      {/* Content Tabs */}
+      <Container className="mt-4 mb-5">
+        <Tab.Container defaultActiveKey="posts">
+          <Nav variant="tabs" className="mb-4">
+            <Nav.Item>
+              <Nav.Link eventKey="posts">
+                <ArticleIcon style={{ fontSize: 18, marginRight: 8 }} />
+                My Posts
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="bookmarks">
+                <BookmarkIcon style={{ fontSize: 18, marginRight: 8 }} />
+                Bookmarks
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link eventKey="about">
+                <PersonIcon style={{ fontSize: 18, marginRight: 8 }} />
+                About
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+
+          <Tab.Content>
+            {/* Posts Tab */}
+            <Tab.Pane eventKey="posts">
+              <div className="text-center py-5">
+                <ArticleIcon style={{ fontSize: 80, color: '#cbd5e1' }} />
+                <h5 className="text-muted mt-3">No posts yet</h5>
+                <p className="text-muted">Start creating your first post!</p>
+                <Button variant="primary" href="/posts/create">
+                  Create Post
                 </Button>
-              </Box>
-            </Box>
-          </Box>
-        </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={handleDialogClose} disabled={loading}>
-            Cancel
-          </Button>
-          <Button onClick={() => formik.handleSubmit()} disabled={loading || !formik.dirty}>
-            {loading ? 'Saving...' : 'Save Changes'}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </Box>
+              </div>
+            </Tab.Pane>
+
+            {/* Bookmarks Tab */}
+            <Tab.Pane eventKey="bookmarks">
+              <div className="text-center py-5">
+                <BookmarkIcon style={{ fontSize: 80, color: '#cbd5e1' }} />
+                <h5 className="text-muted mt-3">No bookmarks yet</h5>
+                <p className="text-muted">Save your favorite posts to read later</p>
+              </div>
+            </Tab.Pane>
+
+            {/* About Tab */}
+            <Tab.Pane eventKey="about">
+              <Card>
+                <Card.Body className="p-4">
+                  <h5 className="mb-3">About {user.username}</h5>
+                  <Row>
+                    <Col md={6} className="mb-3">
+                      <div className="text-muted mb-1">Username</div>
+                      <div className="fw-semibold">{user.username}</div>
+                    </Col>
+                    <Col md={6} className="mb-3">
+                      <div className="text-muted mb-1">Email</div>
+                      <div className="fw-semibold">{user.email}</div>
+                    </Col>
+                    <Col md={12} className="mb-3">
+                      <div className="text-muted mb-1">Bio</div>
+                      <div className="fw-semibold">
+                        {user.bio || 'No bio provided'}
+                      </div>
+                    </Col>
+                    <Col md={6}>
+                      <div className="text-muted mb-1">Member Since</div>
+                      <div className="fw-semibold">
+                        {new Date().toLocaleDateString()}
+                      </div>
+                    </Col>
+                    <Col md={6}>
+                      <div className="text-muted mb-1">Total Posts</div>
+                      <div className="fw-semibold">0 posts</div>
+                    </Col>
+                  </Row>
+                </Card.Body>
+              </Card>
+            </Tab.Pane>
+          </Tab.Content>
+        </Tab.Container>
+      </Container>
+
+      {/* Edit Profile Modal */}
+      <Modal 
+        show={showEditModal} 
+        onHide={() => setShowEditModal(false)}
+        centered
+        size="lg"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Profile</Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={formik.handleSubmit}>
+          <Modal.Body>
+            {/* Profile Picture */}
+            <div className="text-center mb-4">
+              <div className="profile-edit-avatar mx-auto">
+                {imagePreview ? (
+                  <Image 
+                    src={imagePreview} 
+                    alt="Preview"
+                    roundedCircle
+                    fluid
+                  />
+                ) : (
+                  <div className="profile-avatar-placeholder">
+                    <PersonIcon style={{ fontSize: 60, color: '#6b7280' }} />
+                  </div>
+                )}
+              </div>
+              <Form.Group className="mt-3">
+                <Form.Label className="btn btn-outline-primary btn-sm">
+                  <EditIcon style={{ fontSize: 16, marginRight: 4 }} />
+                  Change Photo
+                  <Form.Control
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    hidden
+                  />
+                </Form.Label>
+              </Form.Group>
+            </div>
+
+            {/* Bio */}
+            <Form.Group className="mb-3">
+              <Form.Label>Bio</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                name="bio"
+                placeholder="Tell us about yourself..."
+                value={formik.values.bio}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                isInvalid={formik.touched.bio && !!formik.errors.bio}
+              />
+              <Form.Control.Feedback type="invalid">
+                {formik.errors.bio}
+              </Form.Control.Feedback>
+              <Form.Text className="text-muted">
+                {formik.values.bio.length}/500 characters
+              </Form.Text>
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button 
+              variant="secondary" 
+              onClick={() => setShowEditModal(false)}
+              disabled={loading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="primary" 
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
+    </div>
   );
 };
 
