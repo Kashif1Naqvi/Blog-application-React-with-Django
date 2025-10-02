@@ -167,6 +167,50 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
     
+    def update(self, request, *args, **kwargs):
+        """Update comment - only author can edit"""
+        comment = self.get_object()
+        
+        # Check if user is the author
+        if comment.author != request.user:
+            return Response(
+                {'error': 'You can only edit your own comments'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Only allow content to be updated
+        content = request.data.get('content', '').strip()
+        if not content:
+            return Response(
+                {'error': 'Comment content cannot be empty'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        comment.content = content
+        comment.save()
+        
+        serializer = self.get_serializer(comment)
+        return Response(serializer.data)
+    
+    def partial_update(self, request, *args, **kwargs):
+        """Partial update comment - only author can edit"""
+        return self.update(request, *args, **kwargs)
+    
+    def destroy(self, request, *args, **kwargs):
+        """Delete comment - only author can delete"""
+        comment = self.get_object()
+        
+        # Check if user is the author
+        if comment.author != request.user:
+            return Response(
+                {'error': 'You can only delete your own comments'}, 
+                status=status.HTTP_403_FORBIDDEN
+            )
+        
+        # Delete the comment (this will also delete replies due to CASCADE)
+        comment.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def reply(self, request, pk=None):
         print("trigger.............................")

@@ -35,6 +35,7 @@ class Post(models.Model):
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='draft')
     views_count = models.PositiveIntegerField(default=0)
     likes_count = models.PositiveIntegerField(default=0)
+    comments_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     published_at = models.DateTimeField(null=True, blank=True)
@@ -77,6 +78,11 @@ class Post(models.Model):
         minutes = word_count / 200  # Average reading speed
         return max(1, round(minutes))
 
+    def update_comments_count(self):
+        """Update the comments count for this post"""
+        self.comments_count = self.comments.count()
+        self.save(update_fields=['comments_count'])
+
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
@@ -90,6 +96,21 @@ class Comment(models.Model):
     
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.title}"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        super().save(*args, **kwargs)
+        
+        # Update post's comments count when a new comment is created
+        if is_new:
+            self.post.update_comments_count()
+    
+    def delete(self, *args, **kwargs):
+        post = self.post
+        super().delete(*args, **kwargs)
+        
+        # Update post's comments count when a comment is deleted
+        post.update_comments_count()
 
 class Like(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='likes')

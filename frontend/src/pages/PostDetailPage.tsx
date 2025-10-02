@@ -30,6 +30,8 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SendIcon from '@mui/icons-material/Send';
+import SaveIcon from '@mui/icons-material/Save';
+import CancelIcon from '@mui/icons-material/Cancel';
 import { useAuth } from '../contexts/AuthContext';
 import {
   getPost,
@@ -39,6 +41,7 @@ import {
   createComment,
   deleteComment,
   deletePost,
+  updateComment,
   type Post,
   type Comment,
 } from '../services/blogService';
@@ -57,6 +60,9 @@ const PostDetailPage = () => {
   const [replyText, setReplyText] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [editingComment, setEditingComment] = useState<number | null>(null);
+  const [editText, setEditText] = useState('');
+  const [updatingComment, setUpdatingComment] = useState(false);
 
   useEffect(() => {
     loadPost();
@@ -146,6 +152,32 @@ const PostDetailPage = () => {
     }
   };
 
+  const handleEditComment = (comment: Comment) => {
+    setEditingComment(comment.id);
+    setEditText(comment.content);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingComment(null);
+    setEditText('');
+  };
+
+  const handleUpdateComment = async (commentId: number) => {
+    if (!editText.trim()) return;
+
+    try {
+      setUpdatingComment(true);
+      await updateComment(commentId, editText);
+      setEditingComment(null);
+      setEditText('');
+      loadComments();
+    } catch (err) {
+      console.error('Error updating comment:', err);
+    } finally {
+      setUpdatingComment(false);
+    }
+  };
+
   const handleDeletePost = async () => {
     if (!post) return;
     
@@ -189,34 +221,84 @@ const PostDetailPage = () => {
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
                     {new Date(comment.created_at).toLocaleDateString()}
+                    {comment.updated_at !== comment.created_at && (
+                      <span style={{ fontStyle: 'italic', marginLeft: 4 }}>
+                        (edited)
+                      </span>
+                    )}
                   </Typography>
                 </Box>
                 
                 {user?.username === comment.author.username && (
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      if (window.confirm('Delete this comment?')) {
-                        deleteComment(comment.id).then(() => loadComments());
-                      }
-                    }}
-                  >
-                    <DeleteIcon fontSize="small" />
-                  </IconButton>
+                  <Stack direction="row" spacing={0.5}>
+                    <IconButton
+                      size="small"
+                      onClick={() => handleEditComment(comment)}
+                      disabled={editingComment === comment.id}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                    
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        if (window.confirm('Delete this comment?')) {
+                          deleteComment(comment.id).then(() => loadComments());
+                        }
+                      }}
+                    >
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Stack>
                 )}
               </Stack>
               
-              <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
-                {comment.content}
-              </Typography>
-              
-              <Button
-                size="small"
-                startIcon={<ReplyIcon />}
-                onClick={() => setReplyingTo(comment.id)}
-              >
-                Reply
-              </Button>
+              {editingComment === comment.id ? (
+                <Box sx={{ mt: 2 }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    disabled={updatingComment}
+                    placeholder="Edit your comment..."
+                  />
+                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                    <Button
+                      size="small"
+                      variant="contained"
+                      startIcon={<SaveIcon />}
+                      onClick={() => handleUpdateComment(comment.id)}
+                      disabled={updatingComment || !editText.trim()}
+                    >
+                      {updatingComment ? 'Saving...' : 'Save'}
+                    </Button>
+                    <Button
+                      size="small"
+                      startIcon={<CancelIcon />}
+                      onClick={handleCancelEdit}
+                      disabled={updatingComment}
+                    >
+                      Cancel
+                    </Button>
+                  </Stack>
+                </Box>
+              ) : (
+                <>
+                  <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
+                    {comment.content}
+                  </Typography>
+                  
+                  <Button
+                    size="small"
+                    startIcon={<ReplyIcon />}
+                    onClick={() => setReplyingTo(comment.id)}
+                  >
+                    Reply
+                  </Button>
+                </>
+              )}
               
               {replyingTo === comment.id && (
                 <Box sx={{ mt: 2 }}>

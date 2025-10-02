@@ -42,6 +42,8 @@ export interface Comment {
   replies: Comment[];
   created_at: string;
   updated_at: string;
+  can_edit: boolean;
+  can_delete: boolean;
 }
 
 export interface Tag {
@@ -140,7 +142,7 @@ export const createComment = async (postId: number, content: string, parent?: nu
 };
 
 export const updateComment = async (id: number, content: string) => {
-  const response = await api.put(`/blog/comments/${id}/`, { content });
+  const response = await api.patch(`/blog/comments/${id}/`, { content });
   return response.data;
 };
 

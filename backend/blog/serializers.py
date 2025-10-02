@@ -25,16 +25,30 @@ class AuthorSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
     replies = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
+    can_delete = serializers.SerializerMethodField()
     
     class Meta:
         model = Comment
-        fields = ['id', 'post', 'author', 'content', 'parent', 'replies', 'created_at', 'updated_at']
+        fields = ['id', 'post', 'author', 'content', 'parent', 'replies', 'created_at', 'updated_at', 'can_edit', 'can_delete']
         read_only_fields = ['author', 'created_at', 'updated_at']
     
     def get_replies(self, obj):
         if obj.replies.exists():
             return CommentSerializer(obj.replies.all(), many=True, context=self.context).data
         return []
+    
+    def get_can_edit(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.author == request.user
+        return False
+    
+    def get_can_delete(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.author == request.user
+        return False
 
 class PostListSerializer(serializers.ModelSerializer):
     author = AuthorSerializer(read_only=True)
