@@ -44,6 +44,8 @@ export interface Comment {
   updated_at: string;
   can_edit: boolean;
   can_delete: boolean;
+  is_liked: boolean;
+  likes_count: number;
 }
 
 export interface Tag {
@@ -164,4 +166,10 @@ export const getTags = async () => {
 export const getTagPosts = async (tagId: number) => {
   const response = await api.get(`/blog/tags/${tagId}/posts/`);
   return response.data as Post[];
+};
+
+// Comment likes
+export const likeComment = async (id: number) => {
+  const response = await api.post(`/blog/comments/${id}/like/`);
+  return response.data;
 };

@@ -17,6 +17,7 @@ import BookmarkIcon from '@mui/icons-material/Bookmark';
 import ShareIcon from '@mui/icons-material/Share';
 import { IconButton, Avatar } from '@mui/material';
 import { getPosts, likePost, bookmarkPost, type Post } from '../services/blogService';
+import LikeButton from '../components/LikeButton';
 import './HomePage.css';
 
 const HomePage = () => {
@@ -236,21 +237,18 @@ const HomePage = () => {
 
                     {isAuthenticated && (
                       <div className="post-actions">
-                        <IconButton
-                          size="small"
-                          className="action-btn"
-                          onClick={(e) => {
+                        <LikeButton
+                          isLiked={post.is_liked}
+                          likesCount={post.likes_count}
+                          onToggleLike={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             handleLikePost(post.id);
                           }}
-                        >
-                          {post.is_liked ? (
-                            <FavoriteIcon style={{ fontSize: 16, color: 'var(--color-error)' }} />
-                          ) : (
-                            <FavoriteBorderIcon style={{ fontSize: 16, color: 'var(--color-error)' }} />
-                          )}
-                        </IconButton>
+                          size="small"
+                          showCount={false}
+                          variant="post"
+                        />
                         <IconButton
                           size="small"
                           className="action-btn"
@@ -284,12 +282,15 @@ const HomePage = () => {
                         <AccessTimeIcon style={{ fontSize: 14 }} />
                         <small>{post.reading_time}m</small>
                       </div>
+                      <LikeButton
+                        isLiked={post.is_liked}
+                        likesCount={post.likes_count}
+                        onToggleLike={() => handleLikePost(post.id)}
+                        size="small"
+                        variant="post"
+                      />
                       <div className="stat-item">
-                        <FavoriteIcon style={{ fontSize: 14, color: 'var(--color-error)' }} />
-                        <small>{post.likes_count}</small>
-                      </div>
-                      <div className="stat-item">
-                        <ChatBubbleOutlineIcon style={{ fontSize: 14, color: 'var(--color-primary)' }} />
+                        <ChatBubbleOutlineIcon style={{ fontSize: 14 }} />
                         <small>{post.comments_count}</small>
                       </div>
                       <div className="stat-item ms-auto">

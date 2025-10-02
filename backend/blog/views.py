@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
 from django.db.models import Q, Count, F
 from django.shortcuts import get_object_or_404
-from .models import Post, Tag, Comment, Like, Bookmark
+from .models import Post, Tag, Comment, Like, Bookmark, CommentLike
 from .serializers import (
     PostListSerializer, PostDetailSerializer, PostCreateUpdateSerializer,
     TagSerializer, CommentSerializer, LikeSerializer, BookmarkSerializer
@@ -227,6 +227,31 @@ class CommentViewSet(viewsets.ModelViewSet):
             )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
+    def like(self, request, pk=None):
+        """Like or unlike a comment"""
+        comment = self.get_object()
+        like, created = CommentLike.objects.get_or_create(comment=comment, user=request.user)
+        
+        if not created:
+            # Unlike
+            like.delete()
+            comment.likes_count = max(0, comment.likes_count - 1)
+            comment.save(update_fields=['likes_count'])
+            return Response({
+                'status': 'unliked',
+                'likes_count': comment.likes_count
+            })
+        else:
+            # Like
+            comment.likes_count = F('likes_count') + 1
+            comment.save(update_fields=['likes_count'])
+            comment.refresh_from_db()
+            return Response({
+                'status': 'liked',
+                'likes_count': comment.likes_count
+            })
 
 class BookmarkViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = BookmarkSerializer

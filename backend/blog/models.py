@@ -88,6 +88,7 @@ class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
     content = models.TextField()
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    likes_count = models.PositiveIntegerField(default=0)  # ADD THIS LINE
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -96,6 +97,12 @@ class Comment(models.Model):
     
     def __str__(self):
         return f"Comment by {self.author.username} on {self.post.title}"
+
+    # ADD THIS METHOD
+    def update_likes_count(self):
+        """Update the likes count for this comment"""
+        self.likes_count = self.likes.count()
+        self.save(update_fields=['likes_count'])
 
     def save(self, *args, **kwargs):
         is_new = self.pk is None
@@ -123,6 +130,18 @@ class Like(models.Model):
     
     def __str__(self):
         return f"{self.user.username} likes {self.post.title}"
+
+class CommentLike(models.Model):
+    comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='likes')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='liked_comments')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        unique_together = ('comment', 'user')
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"{self.user.username} likes comment by {self.comment.author.username}"
 
 class Bookmark(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='bookmarks')

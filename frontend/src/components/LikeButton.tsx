@@ -1,5 +1,5 @@
 import React from 'react';
-import { IconButton } from '@mui/material';
+import { IconButton, Typography, Stack } from '@mui/material';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 
@@ -10,6 +10,7 @@ interface LikeButtonProps {
   size?: 'small' | 'medium' | 'large';
   showCount?: boolean;
   disabled?: boolean;
+  variant?: 'post' | 'comment';
   className?: string;
 }
 
@@ -20,56 +21,61 @@ const LikeButton: React.FC<LikeButtonProps> = ({
   size = 'medium',
   showCount = true,
   disabled = false,
-  className = '',
+  variant = 'post',
+  className = ''
 }) => {
-  const iconSize = size === 'small' ? 16 : size === 'large' ? 24 : 18;
+  const iconSize = size === 'small' ? 16 : size === 'large' ? 24 : 20;
+  const textSize = variant === 'comment' ? '0.75rem' : '0.875rem';
   
   return (
-    <div className={`d-flex align-items-center gap-1 ${className}`}>
+    <Stack 
+      direction="row" 
+      alignItems="center" 
+      spacing={0.5} 
+      className={className}
+    >
       <IconButton
         size={size}
         onClick={onToggleLike}
         disabled={disabled}
-        className="p-1"
-        style={{
-          color: isLiked ? 'var(--color-error)' : 'var(--color-muted)',
-          backgroundColor: 'transparent',
+        sx={{
+          color: isLiked ? '#ef4444' : '#6b7280',
           transition: 'all 0.2s ease',
-        }}
-        onMouseEnter={(e) => {
-          if (!disabled) {
-            e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.backgroundColor = isLiked 
-              ? 'rgba(211, 47, 47, 0.1)' 
-              : 'rgba(125, 114, 104, 0.1)';
-          }
-        }}
-        onMouseLeave={(e) => {
-          if (!disabled) {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.backgroundColor = 'transparent';
-          }
+          '&:hover': {
+            color: isLiked ? '#dc2626' : '#ef4444',
+            transform: 'scale(1.1)',
+            backgroundColor: isLiked 
+              ? 'rgba(239, 68, 68, 0.1)' 
+              : 'rgba(107, 114, 128, 0.1)',
+          },
+          '&:active': {
+            transform: 'scale(0.95)',
+          },
         }}
       >
         {isLiked ? (
-          <FavoriteIcon style={{ fontSize: iconSize }} />
+          <FavoriteIcon sx={{ fontSize: iconSize }} />
         ) : (
-          <FavoriteBorderIcon style={{ fontSize: iconSize }} />
+          <FavoriteBorderIcon sx={{ fontSize: iconSize }} />
         )}
       </IconButton>
+      
       {showCount && (
-        <small 
-          className="fw-medium" 
-          style={{ 
-            color: isLiked ? 'var(--color-error)' : 'var(--color-muted)',
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 600,
+            fontSize: textSize,
+            color: isLiked ? '#ef4444' : '#6b7280',
             minWidth: '20px',
-            textAlign: 'center'
+            textAlign: 'left',
+            transition: 'color 0.2s ease',
           }}
         >
           {likesCount}
-        </small>
+        </Typography>
       )}
-    </div>
+    </Stack>
   );
 };
 

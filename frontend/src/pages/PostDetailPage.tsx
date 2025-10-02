@@ -42,9 +42,11 @@ import {
   deleteComment,
   deletePost,
   updateComment,
+  likeComment,
   type Post,
   type Comment,
 } from '../services/blogService';
+import LikeButton from '../components/LikeButton';
 
 const PostDetailPage = () => {
   const { id } = useParams();
@@ -201,6 +203,37 @@ const PostDetailPage = () => {
     setAnchorEl(null);
   };
 
+  const handleCommentLike = async (commentId: number) => {
+    try {
+      const result = await likeComment(commentId);
+      
+      // Update the specific comment in the comments array
+      const updateCommentLikes = (comments: Comment[]): Comment[] => {
+        return comments.map(comment => {
+          if (comment.id === commentId) {
+            return {
+              ...comment,
+              is_liked: result.status === 'liked',
+              likes_count: result.likes_count
+            };
+          }
+          // Also check replies recursively
+          if (comment.replies && comment.replies.length > 0) {
+            return {
+              ...comment,
+              replies: updateCommentLikes(comment.replies)
+            };
+          }
+          return comment;
+        });
+      };
+
+      setComments(updateCommentLikes(comments));
+    } catch (err) {
+      console.error('Error liking comment:', err);
+    }
+  };
+
   const renderComment = (comment: Comment, depth = 0) => (
     <Box key={comment.id} sx={{ ml: depth * 4 }}>
       <Card variant="outlined" sx={{ mb: 2 }}>
@@ -290,13 +323,29 @@ const PostDetailPage = () => {
                     {comment.content}
                   </Typography>
                   
-                  <Button
-                    size="small"
-                    startIcon={<ReplyIcon />}
-                    onClick={() => setReplyingTo(comment.id)}
-                  >
-                    Reply
-                  </Button>
+                  {/* ADD COMMENT ACTIONS WITH LIKE BUTTON */}
+                  <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1 }}>
+                    {/* LIKE BUTTON FOR COMMENTS */}
+                    {user && (
+                      <LikeButton
+                        isLiked={comment.is_liked}
+                        likesCount={comment.likes_count}
+                        onToggleLike={() => handleCommentLike(comment.id)}
+                        size="small"
+                        variant="comment"
+                      />
+                    )}
+                    
+                    {/* REPLY BUTTON */}
+                    <Button
+                      size="small"
+                      startIcon={<ReplyIcon />}
+                      onClick={() => setReplyingTo(comment.id)}
+                      sx={{ fontSize: '0.75rem' }}
+                    >
+                      Reply
+                    </Button>
+                  </Stack>
                 </>
               )}
               
@@ -453,14 +502,18 @@ const PostDetailPage = () => {
 
       {/* Actions */}
       <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
-        <Button
-          variant={post.is_liked ? 'contained' : 'outlined'}
-          startIcon={post.is_liked ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-          onClick={handleLike}
-        >
-          {post.likes_count} Likes
-        </Button>
+        {/* ENHANCED POST LIKE BUTTON */}
+        {user && (
+          <LikeButton
+            isLiked={post.is_liked}
+            likesCount={post.likes_count}
+            onToggleLike={handleLike}
+            size="medium"
+            variant="post"
+          />
+        )}
         
+        {/* KEEP EXISTING BOOKMARK BUTTON */}
         <Button
           variant={post.is_bookmarked ? 'contained' : 'outlined'}
           startIcon={post.is_bookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
@@ -469,6 +522,7 @@ const PostDetailPage = () => {
           {post.is_bookmarked ? 'Saved' : 'Save'}
         </Button>
         
+        {/* KEEP EXISTING SHARE BUTTON */}
         <Button variant="outlined" startIcon={<ShareIcon />}>
           Share
         </Button>

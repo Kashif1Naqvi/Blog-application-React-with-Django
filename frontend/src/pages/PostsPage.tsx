@@ -16,6 +16,7 @@ import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import CreateIcon from '@mui/icons-material/Create';
 import { Avatar, IconButton } from '@mui/material';
 import { getPosts, likePost, bookmarkPost, type Post } from '../services/blogService';
+import LikeButton from '../components/LikeButton';
 import './PostsPage.css';
 
 const PostsPage = () => {
@@ -227,21 +228,25 @@ const PostsPage = () => {
                       {/* Quick Actions */}
                       {isAuthenticated && (
                         <div className="position-absolute d-flex gap-2" style={{ top: 12, right: 12 }}>
-                          <IconButton
-                            size="small"
-                            className="bg-white shadow-sm"
+                          {/* ENHANCED LIKE BUTTON */}
+                          <div 
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
-                              handleLikePost(post.id);
                             }}
                           >
-                            {post.is_liked ? (
-                              <FavoriteIcon style={{ fontSize: 18, color: '#ef4444' }} />
-                            ) : (
-                              <FavoriteBorderIcon style={{ fontSize: 18, color: '#ef4444' }} />
-                            )}
-                          </IconButton>
+                            <LikeButton
+                              isLiked={post.is_liked}
+                              likesCount={post.likes_count}
+                              onToggleLike={() => handleLikePost(post.id)}
+                              size="small"
+                              showCount={false}
+                              variant="post"
+                              className="bg-white shadow-sm rounded-circle"
+                            />
+                          </div>
+                          
+                          {/* KEEP EXISTING BOOKMARK BUTTON */}
                           <IconButton
                             size="small"
                             className="bg-white shadow-sm"
@@ -295,10 +300,16 @@ const PostsPage = () => {
                           <AccessTimeIcon style={{ fontSize: 14, color: '#6b7280' }} />
                           <small className="fw-semibold text-muted">{post.reading_time}m</small>
                         </div>
-                        <div className="d-flex align-items-center gap-1">
-                          <FavoriteIcon style={{ fontSize: 14, color: '#ef4444' }} />
-                          <small className="fw-semibold text-muted">{post.likes_count}</small>
-                        </div>
+                        
+                        {/* ENHANCED LIKE STATS */}
+                        <LikeButton
+                          isLiked={post.is_liked}
+                          likesCount={post.likes_count}
+                          onToggleLike={() => handleLikePost(post.id)}
+                          size="small"
+                          variant="post"
+                        />
+                        
                         <div className="d-flex align-items-center gap-1">
                           <ChatBubbleOutlineIcon style={{ fontSize: 14, color: '#0d9488' }} />
                           <small className="fw-semibold text-muted">{post.comments_count}</small>
