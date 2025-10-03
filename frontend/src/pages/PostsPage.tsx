@@ -99,157 +99,128 @@ const PostsPage = () => {
   };
 
   return (
-    <div className="posts-page">
-      {/* Hero Header */}
-      <div className="posts-hero bg-gradient text-white py-5 mb-4">
-        <Container>
+    <div className="posts-page-modern">
+      <Container fluid className="px-4">
+        {/* Header */}
+        <div className="page-header mb-5">
           <Row className="align-items-center">
-            <Col lg={8}>
-              <h1 className="display-4 fw-bold mb-3">Explore Stories</h1>
-              <p className="lead mb-0">
-                Discover amazing content from our community of writers
+            <Col md={8}>
+              <h1 className="page-title gradient-text">All Posts</h1>
+              <p className="page-subtitle text-muted">
+                Discover amazing stories from our community
               </p>
             </Col>
-            {isAuthenticated && (
-              <Col lg={4} className="text-lg-end mt-3 mt-lg-0">
-                <Button
-                  variant="light"
-                  size="lg"
-                  as={RouterLink}
-                  to="/posts/create"
-                  className="fw-semibold"
+            <Col md={4} className="text-end">
+              {isAuthenticated && (
+                <Button 
+                  as={RouterLink} 
+                  to="/create-post"
+                  className="btn-modern btn-primary-modern"
                 >
-                  <CreateIcon className="me-2" style={{ fontSize: 20 }} />
-                  Write a Post
+                  <CreateIcon className="me-2" />
+                  Write Post
                 </Button>
-              </Col>
-            )}
+              )}
+            </Col>
           </Row>
-        </Container>
-      </div>
+        </div>
 
-      <Container>
-        {/* Search and Filters */}
-        <Row className="mb-4">
-          <Col lg={8}>
-            <Form onSubmit={handleSearch}>
-              <InputGroup size="lg">
-                <InputGroup.Text className="bg-white">
-                  <SearchIcon />
-                </InputGroup.Text>
+        {/* Filters */}
+        <div className="filters-section mb-5">
+          <Row>
+            <Col lg={8}>
+              <div className="search-wrapper">
                 <Form.Control
-                  type="search"
-                  placeholder="Search posts..."
+                  type="text"
+                  placeholder="Search posts, authors, or topics..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  aria-label="Search posts"
+                  className="search-input"
                 />
-                <Button variant="primary" type="submit">
-                  Search
-                </Button>
-              </InputGroup>
-            </Form>
-          </Col>
-          <Col lg={4} className="mt-3 mt-lg-0">
-            <Form.Select
-              size="lg"
-              value={sortBy}
-              onChange={(e) => {
-                setSortBy(e.target.value);
-                setPage(1);
-              }}
-              aria-label="Sort posts by"
-            >
-              <option value="-created_at">Latest</option>
-              <option value="-views_count">Most Viewed</option>
-              <option value="-likes_count">Most Liked</option>
-              <option value="-comments_count">Most Discussed</option>
-            </Form.Select>
-          </Col>
-        </Row>
+                <SearchIcon className="search-icon" />
+              </div>
+            </Col>
+            <Col lg={4}>
+              <Form.Select 
+                value={sortBy} 
+                onChange={(e) => setSortBy(e.target.value)}
+                className="filter-select"
+              >
+                <option value="-created_at">Latest First</option>
+                <option value="created_at">Oldest First</option>
+                <option value="-likes_count">Most Liked</option>
+                <option value="-views_count">Most Viewed</option>
+              </Form.Select>
+            </Col>
+          </Row>
+        </div>
 
         {/* Posts Grid */}
         {loading && page === 1 ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="primary" role="status">
-              <span className="visually-hidden">Loading posts...</span>
-            </Spinner>
-          </div>
-        ) : error ? (
-          <Alert variant="danger">{error}</Alert>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-5">
-            <AutoStoriesIcon style={{ fontSize: 80, color: '#cbd5e1' }} />
-            <h4 className="text-muted mt-3">No posts found</h4>
-            <p className="text-muted">Try adjusting your search or filters</p>
-          </div>
+          <Row className="g-4">
+            {[...Array(9)].map((_, i) => (
+              <Col key={i} xl={4} lg={6} md={6} className="mb-4">
+                <div className="card-skeleton">
+                  <div className="skeleton-image"></div>
+                  <div className="skeleton-content">
+                    <div className="skeleton-line"></div>
+                    <div className="skeleton-line short"></div>
+                    <div className="skeleton-line"></div>
+                  </div>
+                </div>
+              </Col>
+            ))}
+          </Row>
         ) : (
           <>
             <Row className="g-4">
               {posts.map((post, index) => (
-                <Col lg={4} md={6} sm={12} key={post.id}>
+                <Col key={post.id} xl={4} lg={6} md={6} className="mb-4">
                   <Card 
-                    className="h-100 border-0 shadow-sm post-card"
-                    style={{ 
-                      cursor: 'pointer',
-                      animation: `fadeIn 0.5s ease-out ${(index % 6) * 0.08}s both`,
-                    }}
-                    as={RouterLink}
-                    to={`/posts/${post.id}`}
+                    as={RouterLink} 
+                    to={`/posts/${post.id}`} 
+                    className="post-card-modern h-100 text-decoration-none animate-fade-in-up"
+                    style={{ animationDelay: `${index * 0.05}s` }}
                   >
                     {/* Card Image */}
-                    <div className="position-relative" style={{ height: 200, overflow: 'hidden' }}>
+                    <div className="post-image-container">
                       {post.featured_image ? (
                         <Card.Img 
                           variant="top" 
                           src={post.featured_image} 
                           alt={post.title}
                           className="post-image"
-                          style={{ height: '100%', objectFit: 'cover' }}
-                          loading="lazy"
                         />
                       ) : (
-                        <div className="d-flex align-items-center justify-content-center bg-light h-100">
-                          <AutoStoriesIcon style={{ fontSize: 60, color: '#9ca3af' }} />
+                        <div className="post-image-placeholder">
+                          <AutoStoriesIcon />
                         </div>
                       )}
                       
-                      {/* Tags */}
-                      {post.tags.length > 0 && (
-                        <Badge 
-                          bg="primary"
-                          className="position-absolute"
-                          style={{ top: 12, left: 12, fontSize: '0.7rem' }}
-                        >
-                          {post.tags[0].name}
-                        </Badge>
-                      )}
-
+                      {/* Status Badge */}
+                      <div className="post-status-badge">
+                        {post.status === 'published' ? '🌟 Published' : '📝 Draft'}
+                      </div>
+                      
                       {/* Quick Actions */}
                       {isAuthenticated && (
-                        <div className="position-absolute d-flex gap-2" style={{ top: 12, right: 12 }}>
-                          {/* ENHANCED LIKE BUTTON */}
+                        <div className="post-quick-actions">
                           <div 
+                            className="action-btn like-btn"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
+                              handleLikePost(post.id);
                             }}
                           >
-                            <LikeButton
-                              isLiked={post.is_liked}
-                              likesCount={post.likes_count}
-                              onToggleLike={() => handleLikePost(post.id)}
-                              size="small"
-                              showCount={false}
-                              variant="post"
-                              className="bg-white shadow-sm rounded-circle"
-                            />
+                            {post.is_liked ? (
+                              <FavoriteIcon className="text-danger" />
+                            ) : (
+                              <FavoriteBorderIcon />
+                            )}
                           </div>
-                          
-                          {/* KEEP EXISTING BOOKMARK BUTTON */}
-                          <IconButton
-                            size="small"
-                            className="bg-white shadow-sm"
+                          <div 
+                            className="action-btn bookmark-btn"
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
@@ -257,88 +228,78 @@ const PostsPage = () => {
                             }}
                           >
                             {post.is_bookmarked ? (
-                              <BookmarkIcon style={{ fontSize: 18, color: '#0d9488' }} />
+                              <BookmarkIcon className="text-primary" />
                             ) : (
-                              <BookmarkBorderIcon style={{ fontSize: 18, color: '#0d9488' }} />
+                              <BookmarkBorderIcon />
                             )}
-                          </IconButton>
+                          </div>
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Card Body */}
-                    <Card.Body className="d-flex flex-column p-3">
-                      <Card.Title 
-                        className="fw-bold mb-2"
-                        style={{ 
-                          fontSize: '1.1rem',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
+                    <Card.Body className="d-flex flex-column p-4">
+                      {/* Tags */}
+                      {post.tags.length > 0 && (
+                        <div className="post-tags mb-3">
+                          {post.tags.slice(0, 2).map(tag => (
+                            <span key={tag.id} className="tag-modern">
+                              {tag.name}
+                            </span>
+                          ))}
+                          {post.tags.length > 2 && (
+                            <span className="tag-modern">+{post.tags.length - 2}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Title */}
+                      <Card.Title className="post-title mb-3">
                         {post.title}
                       </Card.Title>
-                      
-                      <Card.Text 
-                        className="text-muted mb-3 flex-grow-1"
-                        style={{ 
-                          fontSize: '0.875rem',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {post.excerpt}
+
+                      {/* Excerpt */}
+                      <Card.Text className="post-excerpt text-muted mb-4 flex-grow-1">
+                        {post.excerpt || post.content.substring(0, 120) + '...'}
                       </Card.Text>
-                      
+
                       {/* Stats */}
-                      <div className="d-flex align-items-center gap-3 py-2 px-3 mb-3 bg-light rounded">
-                        <div className="d-flex align-items-center gap-1">
-                          <AccessTimeIcon style={{ fontSize: 14, color: '#6b7280' }} />
-                          <small className="fw-semibold text-muted">{post.reading_time}m</small>
+                      <div className="post-stats mb-3">
+                        <div className="stat-item">
+                          <AccessTimeIcon />
+                          <span>{post.reading_time}m</span>
                         </div>
-                        
-                        {/* ENHANCED LIKE STATS */}
-                        <LikeButton
-                          isLiked={post.is_liked}
-                          likesCount={post.likes_count}
-                          onToggleLike={() => handleLikePost(post.id)}
-                          size="small"
-                          variant="post"
-                        />
-                        
-                        <div className="d-flex align-items-center gap-1">
-                          <ChatBubbleOutlineIcon style={{ fontSize: 14, color: '#0d9488' }} />
-                          <small className="fw-semibold text-muted">{post.comments_count}</small>
+                        <div className="stat-item">
+                          <FavoriteIcon />
+                          <span>{post.likes_count}</span>
                         </div>
-                        <div className="d-flex align-items-center gap-1 ms-auto">
-                          <VisibilityIcon style={{ fontSize: 14, color: '#6b7280' }} />
-                          <small className="fw-semibold text-muted">{post.views_count}</small>
+                        <div className="stat-item">
+                          <ChatBubbleOutlineIcon />
+                          <span>{post.comments_count}</span>
+                        </div>
+                        <div className="stat-item ms-auto">
+                          <VisibilityIcon />
+                          <span>{post.views_count}</span>
                         </div>
                       </div>
-                      
+
                       {/* Author */}
-                      <div className="d-flex align-items-center gap-2">
+                      <div className="post-author">
                         <Avatar 
                           src={post.author.profile_picture || undefined}
-                          style={{ width: 32, height: 32 }}
+                          className="author-avatar"
                         >
                           {post.author.username.charAt(0).toUpperCase()}
                         </Avatar>
-                        <div className="flex-grow-1">
-                          <div className="fw-semibold" style={{ fontSize: '0.875rem' }}>
-                            {post.author.username}
-                          </div>
-                          <small className="text-muted" style={{ fontSize: '0.75rem' }}>
-                            {new Date(post.created_at).toLocaleDateString()}
+                        <div className="author-info">
+                          <div className="author-name">{post.author.username}</div>
+                          <small className="author-date text-muted">
+                            {new Date(post.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric'
+                            })}
                           </small>
                         </div>
-                        <IconButton size="small">
-                          <ShareIcon style={{ fontSize: 16 }} />
-                        </IconButton>
                       </div>
                     </Card.Body>
                   </Card>
@@ -346,14 +307,14 @@ const PostsPage = () => {
               ))}
             </Row>
 
-            {/* Load More */}
+            {/* Load More Button */}
             {hasMore && (
               <div className="text-center mt-5">
                 <Button
-                  variant="outline-primary"
-                  size="lg"
                   onClick={() => setPage(p => p + 1)}
                   disabled={loading}
+                  className="btn-modern btn-glass"
+                  size="lg"
                 >
                   {loading ? (
                     <>
@@ -361,7 +322,10 @@ const PostsPage = () => {
                       Loading...
                     </>
                   ) : (
-                    'Load More Posts'
+                    <>
+                      <CreateIcon className="me-2" />
+                      Load More Posts
+                    </>
                   )}
                 </Button>
               </div>

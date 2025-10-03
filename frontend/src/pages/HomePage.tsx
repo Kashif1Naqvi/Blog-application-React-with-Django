@@ -1,36 +1,30 @@
 import { useState, useEffect } from 'react';
-import { Container, Row, Col, Card, Badge, Button, Spinner, Alert } from 'react-bootstrap';
-import { Link as RouterLink } from 'react-router-dom';
+import { Container, Row, Col, Card, Button, Spinner, Alert } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import CreateIcon from '@mui/icons-material/Create';
-import ExploreIcon from '@mui/icons-material/Explore';
-import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
-import ShareIcon from '@mui/icons-material/Share';
-import { IconButton, Avatar } from '@mui/material';
+import { Avatar } from '@mui/material';
 import { getPosts, likePost, bookmarkPost, type Post } from '../services/blogService';
-import LikeButton from '../components/LikeButton';
 import './HomePage.css';
 
 const HomePage = () => {
   const { isAuthenticated, user } = useAuth();
-  const [featuredPosts, setFeaturedPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadFeaturedPosts();
+    loadPosts();
   }, []);
 
-  const loadFeaturedPosts = async () => {
+  const loadPosts = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -39,10 +33,10 @@ const HomePage = () => {
         ordering: '-views_count',
         page: 1,
       });
-      setFeaturedPosts(data.results.slice(0, 6));
+      setPosts(data.results.slice(0, 6));
     } catch (err) {
-      console.error('Error loading featured posts:', err);
-      setError('Failed to load featured posts');
+      console.error('Error loading posts:', err);
+      setError('Failed to load posts');
     } finally {
       setLoading(false);
     }
@@ -51,9 +45,9 @@ const HomePage = () => {
   const handleLikePost = async (postId: number) => {
     try {
       const result = await likePost(postId);
-      setFeaturedPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId
             ? { ...post, is_liked: result.status === 'liked', likes_count: result.likes_count }
             : post
         )
@@ -66,9 +60,9 @@ const HomePage = () => {
   const handleBookmarkPost = async (postId: number) => {
     try {
       const result = await bookmarkPost(postId);
-      setFeaturedPosts(prevPosts => 
-        prevPosts.map(post => 
-          post.id === postId 
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId
             ? { ...post, is_bookmarked: result.status === 'bookmarked' }
             : post
         )
@@ -79,297 +73,328 @@ const HomePage = () => {
   };
 
   return (
-    <div className="home-page">
-      {/* Hero Section */}
-      <div className="hero-section">
+    <div className="home-page-modern">
+      {/* Enhanced Hero Section */}
+      <section className="hero-section-modern">
+        <div className="hero-background-overlay"></div>
         <Container>
-          <Row className="align-items-center py-5">
-            <Col lg={7}>
-              <div className="hero-badge mb-3">
-                {isAuthenticated ? `Welcome back, ${user?.username}!` : "Join Our Community"}
-              </div>
-              
-              <h1 className="hero-title mb-3">
-                Share Your Ideas,
-                <br />
-                Inspire the World
-              </h1>
-              
-              <p className="hero-subtitle mb-4">
-                {isAuthenticated
-                  ? 'Continue sharing your thoughts with our growing community.'
-                  : 'Join thousands of writers and readers in our community.'
-                }
-              </p>
-              
-              <div className="d-flex gap-3 flex-wrap">
-                {isAuthenticated ? (
-                  <>
+          <Row className="hero-row align-items-center min-vh-75">
+            {/* Left Content */}
+            <Col lg={6} xl={7} className="hero-content-col">
+              <div className="hero-content-wrapper">
+                <div className="hero-badge-wrapper">
+                  <span className="hero-badge animate-scale-in">
+                    <span className="badge-icon">✨</span>
+                    Welcome to Blog App
+                  </span>
+                </div>
+                
+                <div className="hero-title-section">
+                  <h1 className="hero-title animate-fade-in-up">
+                    Discover Amazing
+                    <span className="hero-title-highlight">Stories & Ideas</span>
+                  </h1>
+                </div>
+                
+                <div className="hero-description">
+                  <p className="hero-subtitle animate-fade-in-up">
+                    Join our vibrant community of writers and readers. Share your thoughts, 
+                    discover new perspectives, and connect with like-minded people from around the world.
+                  </p>
+                </div>
+                
+                <div className="hero-actions animate-fade-in-up">
+                  <Button 
+                    as={Link} 
+                    to="/posts" 
+                    size="lg"
+                    className="btn-hero-primary"
+                  >
+                    <AutoStoriesIcon className="btn-icon" />
+                    Explore Posts
+                  </Button>
+                  {!isAuthenticated && (
                     <Button 
-                      variant="primary"
+                      as={Link} 
+                      to="/register" 
+                      variant="outline-light" 
                       size="lg"
-                      as={RouterLink} 
-                      to="/posts/create"
-                      className="px-4"
+                      className="btn-hero-secondary"
                     >
-                      <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
-                      Create Post
+                      Join Community
                     </Button>
-                    <Button 
-                      variant="outline-primary"
-                      size="lg"
-                      as={RouterLink} 
-                      to="/posts"
-                      className="px-4"
-                    >
-                      <ExploreIcon style={{ fontSize: 20, marginRight: 8 }} />
-                      Explore
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <Button 
-                      variant="primary"
-                      size="lg"
-                      as={RouterLink} 
-                      to="/register"
-                      className="px-4"
-                    >
-                      <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
-                      Get Started
-                    </Button>
-                    <Button 
-                      variant="outline-primary"
-                      size="lg"
-                      as={RouterLink} 
-                      to="/posts"
-                      className="px-4"
-                    >
-                      <AutoStoriesIcon style={{ fontSize: 20, marginRight: 8 }} />
-                      Browse
-                    </Button>
-                  </>
-                )}
+                  )}
+                </div>
+                
+                {/* Hero Stats */}
+                <div className="hero-stats animate-fade-in-up">
+                  <div className="stat-item">
+                    <div className="stat-number">{posts.length}+</div>
+                    <div className="stat-label">Posts</div>
+                  </div>
+                  <div className="stat-divider"></div>
+                  <div className="stat-item">
+                    <div className="stat-number">1K+</div>
+                    <div className="stat-label">Writers</div>
+                  </div>
+                  <div className="stat-divider"></div>
+                  <div className="stat-item">
+                    <div className="stat-number">5K+</div>
+                    <div className="stat-label">Readers</div>
+                  </div>
+                </div>
               </div>
             </Col>
-            <Col lg={5} className="d-none d-lg-block text-center">
-              <div className="hero-icon-wrapper">
-                <AutoStoriesIcon className="hero-icon" />
+            
+            {/* Right Illustration */}
+            <Col lg={6} xl={5} className="hero-illustration-col">
+              <div className="hero-illustration-wrapper">
+                <div className="hero-main-visual">
+                  {/* Floating Cards */}
+                  <div className="floating-card card-1">
+                    <div className="card-header">
+                      <div className="card-avatar"></div>
+                      <div className="card-info">
+                        <div className="card-title"></div>
+                        <div className="card-date"></div>
+                      </div>
+                    </div>
+                    <div className="card-content">
+                      <div className="content-line"></div>
+                      <div className="content-line short"></div>
+                    </div>
+                  </div>
+                  
+                  <div className="floating-card card-2">
+                    <div className="card-header">
+                      <div className="card-avatar"></div>
+                      <div className="card-info">
+                        <div className="card-title"></div>
+                        <div className="card-date"></div>
+                      </div>
+                    </div>
+                    <div className="card-content">
+                      <div className="content-line"></div>
+                      <div className="content-line short"></div>
+                    </div>
+                  </div>
+                  
+                  <div className="floating-card card-3">
+                    <div className="card-header">
+                      <div className="card-avatar"></div>
+                      <div className="card-info">
+                        <div className="card-title"></div>
+                        <div className="card-date"></div>
+                      </div>
+                    </div>
+                    <div className="card-content">
+                      <div className="content-line"></div>
+                      <div className="content-line short"></div>
+                    </div>
+                  </div>
+                  
+                  {/* Central Icon */}
+                  <div className="hero-central-icon">
+                    <div className="icon-wrapper">
+                      <AutoStoriesIcon className="main-icon" />
+                    </div>
+                    <div className="icon-glow"></div>
+                  </div>
+                  
+                  {/* Decorative Elements */}
+                  <div className="decoration-circle circle-1"></div>
+                  <div className="decoration-circle circle-2"></div>
+                  <div className="decoration-circle circle-3"></div>
+                  
+                  {/* Floating Icons */}
+                  <div className="floating-icon icon-1">💡</div>
+                  <div className="floating-icon icon-2">📝</div>
+                  <div className="floating-icon icon-3">🚀</div>
+                  <div className="floating-icon icon-4">✨</div>
+                </div>
               </div>
             </Col>
           </Row>
         </Container>
-      </div>
+      </section>
 
-      {/* Featured Posts */}
-      <Container className="py-5">
-        <div className="section-header d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <div className="d-flex align-items-center gap-3 mb-2">
-              <div className="section-icon">
-                <TrendingUpIcon />
-              </div>
-              <h2 className="section-title mb-0">Featured Stories</h2>
-            </div>
-            <p className="section-subtitle">Discover trending content from our community</p>
+      {/* Featured Posts Section */}
+      <section className="section-modern">
+        <Container>
+          <div className="section-header text-center mb-5">
+            <div className="section-badge">📚 Featured</div>
+            <h2 className="section-title gradient-text">Latest Stories</h2>
+            <p className="section-subtitle text-muted">
+              Discover the most engaging content from our community
+            </p>
           </div>
-          
-          <Button 
-            variant="link"
-            as={RouterLink}
-            to="/posts"
-            className="d-none d-sm-flex align-items-center text-decoration-none"
-          >
-            View All
-            <ArrowForwardIcon style={{ fontSize: 18, marginLeft: 4 }} />
-          </Button>
-        </div>
 
-        {loading ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="primary" />
-          </div>
-        ) : error ? (
-          <Alert variant="danger">{error}</Alert>
-        ) : featuredPosts.length === 0 ? (
-          <div className="text-center py-5">
-            <AutoStoriesIcon style={{ fontSize: 80, color: 'var(--color-muted)' }} />
-            <h5 className="mt-3" style={{ color: 'var(--color-muted)' }}>No posts available yet</h5>
-            <p style={{ color: 'var(--color-muted)' }}>Be the first to create a post!</p>
-            {isAuthenticated && (
-              <Button variant="primary" as={RouterLink} to="/posts/create">
-                <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
-                Create Your First Post
-              </Button>
-            )}
-          </div>
-        ) : (
-          <Row className="g-4">
-            {featuredPosts.map((post, index) => (
-              <Col lg={4} md={6} key={post.id}>
-                <Card 
-                  className="post-card h-100"
-                  as={RouterLink}
-                  to={`/posts/${post.id}`}
-                  style={{ 
-                    animationDelay: `${index * 0.1}s`,
-                  }}
-                >
-                  <div className="post-image-wrapper">
-                    {post.featured_image ? (
-                      <Card.Img 
-                        variant="top" 
-                        src={post.featured_image} 
-                        alt={post.title}
-                        className="post-image"
-                      />
-                    ) : (
-                      <div className="post-image-placeholder">
-                        <AutoStoriesIcon style={{ fontSize: 48 }} />
-                      </div>
-                    )}
-                    
-                    {post.tags.length > 0 && (
-                      <Badge bg="primary" className="post-badge">
-                        {post.tags[0].name}
-                      </Badge>
-                    )}
-
-                    {isAuthenticated && (
-                      <div className="post-actions">
-                        <LikeButton
-                          isLiked={post.is_liked}
-                          likesCount={post.likes_count}
-                          onToggleLike={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleLikePost(post.id);
-                          }}
-                          size="small"
-                          showCount={false}
-                          variant="post"
-                        />
-                        <IconButton
-                          size="small"
-                          className="action-btn"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleBookmarkPost(post.id);
-                          }}
-                        >
-                          {post.is_bookmarked ? (
-                            <BookmarkIcon style={{ fontSize: 16, color: 'var(--color-primary)' }} />
-                          ) : (
-                            <BookmarkBorderIcon style={{ fontSize: 16, color: 'var(--color-primary)' }} />
-                          )}
-                        </IconButton>
-                      </div>
-                    )}
+          {loading ? (
+            <Row>
+              {[...Array(6)].map((_, i) => (
+                <Col key={i} lg={4} md={6} className="mb-4">
+                  <div className="card-skeleton">
+                    <div className="skeleton-image"></div>
+                    <div className="skeleton-content">
+                      <div className="skeleton-line"></div>
+                      <div className="skeleton-line short"></div>
+                      <div className="skeleton-line"></div>
+                    </div>
                   </div>
-                  
-                  <Card.Body className="d-flex flex-column">
-                    <Card.Title className="post-title">
-                      {post.title}
-                    </Card.Title>
-                    
-                    <Card.Text className="post-excerpt">
-                      {post.excerpt}
-                    </Card.Text>
-                    
-                    <div className="post-stats">
-                      <div className="stat-item">
-                        <AccessTimeIcon style={{ fontSize: 14 }} />
-                        <small>{post.reading_time}m</small>
+                </Col>
+              ))}
+            </Row>
+          ) : (
+            <Row className="g-4">
+              {posts.map((post, index) => (
+                <Col key={post.id} lg={4} md={6} className="mb-4">
+                  <Card 
+                    as={Link} 
+                    to={`/posts/${post.id}`} 
+                    className="post-card-modern h-100 text-decoration-none animate-fade-in-up"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    {/* Card Image */}
+                    <div className="post-image-container">
+                      {post.featured_image ? (
+                        <Card.Img 
+                          variant="top" 
+                          src={post.featured_image} 
+                          alt={post.title}
+                          className="post-image"
+                        />
+                      ) : (
+                        <div className="post-image-placeholder">
+                          <AutoStoriesIcon />
+                        </div>
+                      )}
+                      
+                      {/* Status Badge */}
+                      <div className="post-status-badge">
+                        {post.status === 'published' ? '🌟 Published' : '📝 Draft'}
                       </div>
-                      <LikeButton
-                        isLiked={post.is_liked}
-                        likesCount={post.likes_count}
-                        onToggleLike={() => handleLikePost(post.id)}
-                        size="small"
-                        variant="post"
-                      />
-                      <div className="stat-item">
-                        <ChatBubbleOutlineIcon style={{ fontSize: 14 }} />
-                        <small>{post.comments_count}</small>
-                      </div>
-                      <div className="stat-item ms-auto">
-                        <VisibilityIcon style={{ fontSize: 14 }} />
-                        <small>{post.views_count}</small>
-                      </div>
+                      
+                      {/* Quick Actions */}
+                      {isAuthenticated && (
+                        <div className="post-quick-actions">
+                          <div 
+                            className="action-btn like-btn"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleLikePost(post.id);
+                            }}
+                          >
+                            {post.is_liked ? (
+                              <FavoriteIcon className="text-danger" />
+                            ) : (
+                              <FavoriteBorderIcon />
+                            )}
+                          </div>
+                          <div 
+                            className="action-btn bookmark-btn"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              handleBookmarkPost(post.id);
+                            }}
+                          >
+                            {post.is_bookmarked ? (
+                              <BookmarkIcon className="text-primary" />
+                            ) : (
+                              <BookmarkBorderIcon />
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    
-                    <div className="post-author mt-3">
-                      <Avatar 
-                        src={post.author.profile_picture || undefined}
-                        style={{ width: 32, height: 32 }}
-                      >
-                        {post.author.username.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <div className="author-info">
-                        <div className="author-name">{post.author.username}</div>
-                        <small className="author-date">
-                          {new Date(post.created_at).toLocaleDateString()}
-                        </small>
-                      </div>
-                      <IconButton size="small" className="ms-auto">
-                        <ShareIcon style={{ fontSize: 16 }} />
-                      </IconButton>
-                    </div>
-                  </Card.Body>
-                </Card>
-              </Col>
-            ))}
-          </Row>
-        )}
 
-        {!loading && featuredPosts.length > 0 && (
-          <div className="text-center mt-4 d-sm-none">
+                    {/* Card Body */}
+                    <Card.Body className="d-flex flex-column p-4">
+                      {/* Tags */}
+                      {post.tags.length > 0 && (
+                        <div className="post-tags mb-3">
+                          {post.tags.slice(0, 2).map(tag => (
+                            <span key={tag.id} className="tag-modern">
+                              {tag.name}
+                            </span>
+                          ))}
+                          {post.tags.length > 2 && (
+                            <span className="tag-modern">+{post.tags.length - 2}</span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Title */}
+                      <Card.Title className="post-title mb-3">
+                        {post.title}
+                      </Card.Title>
+
+                      {/* Excerpt */}
+                      <Card.Text className="post-excerpt text-muted mb-4 flex-grow-1">
+                        {post.excerpt || post.content.substring(0, 120) + '...'}
+                      </Card.Text>
+
+                      {/* Stats */}
+                      <div className="post-stats mb-3">
+                        <div className="stat-item">
+                          <AccessTimeIcon />
+                          <span>{post.reading_time}m read</span>
+                        </div>
+                        <div className="stat-item">
+                          <FavoriteIcon />
+                          <span>{post.likes_count}</span>
+                        </div>
+                        <div className="stat-item">
+                          <ChatBubbleOutlineIcon />
+                          <span>{post.comments_count}</span>
+                        </div>
+                        <div className="stat-item ms-auto">
+                          <VisibilityIcon />
+                          <span>{post.views_count}</span>
+                        </div>
+                      </div>
+
+                      {/* Author */}
+                      <div className="post-author">
+                        <Avatar 
+                          src={post.author.profile_picture || undefined}
+                          className="author-avatar"
+                        >
+                          {post.author.username.charAt(0).toUpperCase()}
+                        </Avatar>
+                        <div className="author-info">
+                          <div className="author-name">{post.author.username}</div>
+                          <small className="author-date text-muted">
+                            {new Date(post.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </small>
+                        </div>
+                      </div>
+                    </Card.Body>
+                  </Card>
+                </Col>
+              ))}
+            </Row>
+          )}
+
+          {/* View All Button */}
+          <div className="text-center mt-5">
             <Button 
-              variant="outline-primary"
-              as={RouterLink}
-              to="/posts"
-              className="w-100"
+              as={Link} 
+              to="/posts" 
+              size="lg"
+              className="btn-modern btn-glass"
             >
+              <AutoStoriesIcon className="me-2" />
               View All Posts
-              <ArrowForwardIcon style={{ fontSize: 18, marginLeft: 8 }} />
             </Button>
           </div>
-        )}
-      </Container>
-
-      {/* CTA Section */}
-      {!isAuthenticated && (
-        <div className="cta-section">
-          <Container className="text-center">
-            <h2 className="cta-title">Ready to Share Your Story?</h2>
-            <p className="cta-subtitle">
-              Join thousands of writers and readers in our growing community!
-            </p>
-            <div className="d-flex gap-3 justify-content-center flex-wrap">
-              <Button 
-                variant="primary"
-                size="lg"
-                as={RouterLink} 
-                to="/register"
-                className="px-4"
-              >
-                <CreateIcon style={{ fontSize: 20, marginRight: 8 }} />
-                Create Account
-              </Button>
-              <Button 
-                variant="outline-light"
-                size="lg"
-                as={RouterLink} 
-                to="/login"
-                className="px-4"
-              >
-                Sign In
-              </Button>
-            </div>
-          </Container>
-        </div>
-      )}
+        </Container>
+      </section>
     </div>
   );
 };

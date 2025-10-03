@@ -20,6 +20,11 @@ import {
   CircularProgress,
   Divider,
   IconButton,
+  Container,
+  Button,
+  Paper,
+  Fade,
+  Skeleton,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
@@ -29,11 +34,20 @@ import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import BookmarkBorderIcon from '@mui/icons-material/BookmarkBorder';
+import BookmarkIcon from '@mui/icons-material/Bookmark';
 import ShareIcon from '@mui/icons-material/Share';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { getPosts, getTags, type Post, type Tag } from '../services/blogService';
+import ExploreIcon from '@mui/icons-material/Explore';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import NewReleasesIcon from '@mui/icons-material/NewReleases';
+import StarIcon from '@mui/icons-material/Star';
+import { getPosts, getTags, likePost, bookmarkPost, type Post, type Tag } from '../services/blogService';
+import { useAuth } from '../contexts/AuthContext';
+import './PostsListPage.css';
 
 const PostsListPage = () => {
+  const { isAuthenticated } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [posts, setPosts] = useState<Post[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
@@ -110,375 +124,453 @@ const PostsListPage = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleLikePost = async (postId: number) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const result = await likePost(postId);
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId
+            ? { ...post, is_liked: result.status === 'liked', likes_count: result.likes_count }
+            : post
+        )
+      );
+    } catch (err) {
+      console.error('Error liking post:', err);
+    }
+  };
+
+  const handleBookmarkPost = async (postId: number) => {
+    if (!isAuthenticated) return;
+    
+    try {
+      const result = await bookmarkPost(postId);
+      setPosts(prevPosts =>
+        prevPosts.map(post =>
+          post.id === postId
+            ? { ...post, is_bookmarked: result.status === 'bookmarked' }
+            : post
+        )
+      );
+    } catch (err) {
+      console.error('Error bookmarking post:', err);
+    }
+  };
+
+  const getOrderingIcon = (orderType: string) => {
+    switch (orderType) {
+      case '-created_at': return <NewReleasesIcon />;
+      case '-views_count': return <TrendingUpIcon />;
+      case '-likes_count': return <LocalFireDepartmentIcon />;
+      case '-published_at': return <StarIcon />;
+      default: return <NewReleasesIcon />;
+    }
+  };
+
+  const getOrderingLabel = (orderType: string) => {
+    switch (orderType) {
+      case '-created_at': return 'Latest Posts';
+      case '-views_count': return 'Most Viewed';
+      case '-likes_count': return 'Most Liked';
+      case '-published_at': return 'Recently Published';
+      default: return 'Latest Posts';
+    }
+  };
+
   return (
-    <Box>
-      {/* Header with Icon */}
-      <Box sx={{ mb: 4 }}>
-        <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 1 }}>
-          <Box
-            sx={{
-              width: 48,
-              height: 48,
-              borderRadius: 2,
-              background: 'linear-gradient(135deg, #0d9488 0%, #10b981 100%)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(13, 148, 136, 0.3)',
-            }}
-          >
-            <TrendingUpIcon sx={{ color: 'white', fontSize: 28 }} />
+    <div className="posts-list-page-modern">
+      {/* Hero Header */}
+      <section className="discover-hero-section">
+        <div className="hero-background-pattern"></div>
+        <Container maxWidth="lg">
+          <Box className="hero-content">
+            <Fade in timeout={800}>
+              <Box className="hero-icon-wrapper">
+                <ExploreIcon className="hero-main-icon" />
+              </Box>
+            </Fade>
+            
+            <Fade in timeout={1000}>
+              <Box className="hero-text-content">
+                <Typography variant="h2" className="hero-title">
+                  Discover Amazing
+                  <span className="gradient-text"> Stories</span>
+                </Typography>
+                <Typography variant="h6" className="hero-subtitle">
+                  Explore the latest articles, insights, and stories from our vibrant community
+                </Typography>
+                <Box className="hero-stats">
+                  <div className="stat-item">
+                    <AutoStoriesIcon className="stat-icon" />
+                    <span className="stat-number">{posts.length}+</span>
+                    <span className="stat-label">Posts</span>
+                  </div>
+                  <div className="stat-item">
+                    <TrendingUpIcon className="stat-icon" />
+                    <span className="stat-number">{tags.length}+</span>
+                    <span className="stat-label">Topics</span>
+                  </div>
+                </Box>
+              </Box>
+            </Fade>
           </Box>
-          <Typography variant="h4" fontWeight={700}>
-            Discover Posts
-          </Typography>
-        </Stack>
-        <Typography variant="body1" color="text.secondary" sx={{ ml: 8 }}>
-          Explore the latest articles from our community
-        </Typography>
-      </Box>
+        </Container>
+      </section>
 
-      {/* Filters */}
-      <Box sx={{ mb: 4 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
-          <TextField
-            fullWidth
-            placeholder="Search posts..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon color="primary" />
-                </InputAdornment>
-              ),
-            }}
-          />
-          
-          <FormControl sx={{ minWidth: 200 }}>
-            <InputLabel>Sort By</InputLabel>
-            <Select
-              value={ordering}
-              label="Sort By"
-              onChange={(e) => handleOrderingChange(e.target.value)}
-            >
-              <MenuItem value="-created_at">Latest</MenuItem>
-              <MenuItem value="-published_at">Recently Published</MenuItem>
-              <MenuItem value="-views_count">Most Viewed</MenuItem>
-              <MenuItem value="-likes_count">Most Liked</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-        
-        {tags.length > 0 && (
-          <Box sx={{ mt: 2 }}>
-            <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-              <Chip
-                label="All"
-                onClick={() => handleTagChange('')}
-                color={selectedTag === '' ? 'primary' : 'default'}
-                variant={selectedTag === '' ? 'filled' : 'outlined'}
-              />
-              {tags.map((tag) => (
-                <Chip
-                  key={tag.id}
-                  label={tag.name}
-                  onClick={() => handleTagChange(tag.slug)}
-                  color={selectedTag === tag.slug ? 'primary' : 'default'}
-                  variant={selectedTag === tag.slug ? 'filled' : 'outlined'}
-                />
-              ))}
-            </Stack>
-          </Box>
-        )}
-      </Box>
-
-      {/* Posts Grid */}
-      {loading ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-          <CircularProgress />
-        </Box>
-      ) : posts.length === 0 ? (
-        <Box sx={{ textAlign: 'center', py: 8 }}>
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No posts found
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Try adjusting your search or filters
-          </Typography>
-        </Box>
-      ) : (
-        <>
-          <Grid container spacing={3}>
-            {posts.map((post) => (
-              <Grid item xs={12} sm={6} lg={4} key={post.id}>
-                <Card
-                  component={RouterLink}
-                  to={`/posts/${post.id}`}
-                  sx={{
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    textDecoration: 'none',
-                    border: '1px solid',
-                    borderColor: 'grey.200',
-                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: '0 20px 40px rgba(13, 148, 136, 0.15)',
-                      borderColor: 'primary.main',
-                      '& .post-image': {
-                        transform: 'scale(1.08)',
-                      },
-                    },
-                  }}
-                >
-                  {/* Compact Image */}
-                  {post.featured_image && (
-                    <Box sx={{ position: 'relative', overflow: 'hidden', height: 180 }}>
-                      <CardMedia
-                        component="img"
-                        height="180"
-                        image={post.featured_image}
-                        alt={post.title}
-                        className="post-image"
-                        sx={{
-                          transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                          objectFit: 'cover',
-                        }}
-                      />
-
-                      {/* Status Badge */}
-                      <Chip
-                        label={post.status}
-                        size="small"
-                        color={post.status === 'published' ? 'success' : 'default'}
-                        sx={{
-                          position: 'absolute',
-                          top: 12,
-                          left: 12,
-                          fontWeight: 700,
-                          fontSize: '0.7rem',
-                          height: 24,
-                        }}
-                      />
-
-                      {/* Quick Actions */}
-                      <Stack
-                        direction="row"
-                        spacing={0.5}
-                        sx={{
-                          position: 'absolute',
-                          top: 12,
-                          right: 12,
-                        }}
-                      >
-                        <IconButton
-                          size="small"
-                          sx={{
-                            bgcolor: 'rgba(255, 255, 255, 0.95)',
-                            backdropFilter: 'blur(8px)',
-                            width: 32,
-                            height: 32,
-                            '&:hover': {
-                              bgcolor: 'white',
-                              transform: 'scale(1.1)',
-                            },
-                          }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                        >
-                          <FavoriteBorderIcon
-                            sx={{
-                              fontSize: 16,
-                              color: post.is_liked ? 'error.main' : 'text.secondary',
-                            }}
-                          />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          sx={{
-                            bgcolor: 'rgba(255, 255, 255, 0.95)',
-                            backdropFilter: 'blur(8px)',
-                            width: 32,
-                            height: 32,
-                            '&:hover': {
-                              bgcolor: 'white',
-                              transform: 'scale(1.1)',
-                            },
-                          }}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                          }}
-                        >
-                          <BookmarkBorderIcon sx={{ fontSize: 16, color: 'primary.main' }} />
-                        </IconButton>
-                      </Stack>
-                    </Box>
-                  )}
-                  
-                  {/* Compact Content */}
-                  <CardContent sx={{ flexGrow: 1, p: 2.5, display: 'flex', flexDirection: 'column' }}>
-                    {/* Tags */}
-                    <Stack direction="row" spacing={0.5} sx={{ mb: 1.5, flexWrap: 'wrap', gap: 0.5 }}>
-                      {post.tags.slice(0, 2).map((tag) => (
-                        <Chip
-                          key={tag.id}
-                          label={tag.name}
-                          size="small"
-                          sx={{
-                            fontSize: '0.7rem',
-                            height: 20,
-                            bgcolor: 'primary.50',
-                            color: 'primary.main',
-                            fontWeight: 600,
-                          }}
-                        />
-                      ))}
-                    </Stack>
-                    
-                    {/* Title */}
-                    <Typography
-                      variant="h6"
-                      fontWeight={700}
-                      sx={{
-                        mb: 1.5,
-                        lineHeight: 1.3,
-                        fontSize: '1.05rem',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        minHeight: '2.6em',
-                      }}
-                    >
-                      {post.title}
-                    </Typography>
-                    
-                    {/* Excerpt */}
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        mb: 2,
-                        lineHeight: 1.6,
-                        fontSize: '0.875rem',
-                        flex: 1,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        minHeight: '2.8em',
-                      }}
-                    >
-                      {post.excerpt}
-                    </Typography>
-                    
-                    {/* Inline Stats */}
-                    <Stack
-                      direction="row"
-                      spacing={2}
-                      alignItems="center"
-                      sx={{
-                        py: 1.5,
-                        px: 1.5,
-                        mx: -1.5,
-                        mb: 1.5,
-                        bgcolor: 'grey.50',
-                        borderRadius: 1.5,
-                      }}
-                    >
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <AccessTimeIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                          {post.reading_time}m
-                        </Typography>
-                      </Stack>
-
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <FavoriteIcon sx={{ fontSize: 14, color: 'error.main' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                          {post.likes_count}
-                        </Typography>
-                      </Stack>
-
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <ChatBubbleOutlineIcon sx={{ fontSize: 14, color: 'primary.main' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                          {post.comments_count}
-                        </Typography>
-                      </Stack>
-
-                      <Stack direction="row" spacing={0.5} alignItems="center" sx={{ ml: 'auto' }}>
-                        <VisibilityIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                        <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                          {post.views_count}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                    
-                    {/* Compact Author */}
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                      <Avatar sx={{ width: 32, height: 32, fontSize: '0.875rem' }}>
-                        {post.author.username.charAt(0).toUpperCase()}
-                      </Avatar>
-                      <Box sx={{ flex: 1, minWidth: 0 }}>
-                        <Typography
-                          variant="body2"
-                          fontWeight={600}
-                          sx={{
-                            fontSize: '0.8125rem',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {post.author.username}
-                        </Typography>
-                      </Box>
-
-                      <IconButton
-                        size="small"
-                        sx={{
-                          color: 'text.secondary',
-                          '&:hover': {
-                            color: 'primary.main',
-                            bgcolor: 'primary.50',
-                          },
-                        }}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                      >
-                        <ShareIcon sx={{ fontSize: 16 }} />
-                      </IconButton>
-                    </Stack>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-          
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-              <Pagination
-                count={totalPages}
-                page={currentPage}
-                onChange={handlePageChange}
-                color="primary"
-                size="large"
+      {/* Filters & Search */}
+      <section className="filters-section-modern">
+        <Container maxWidth="lg">
+          <Paper className="filters-container" elevation={0}>
+            {/* Search Bar */}
+            <Box className="search-section">
+              <TextField
+                fullWidth
+                placeholder="Search posts, authors, or topics..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="search-field-modern"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon className="search-icon" />
+                    </InputAdornment>
+                  ),
+                }}
               />
             </Box>
+
+            {/* Filter Controls */}
+            <Box className="filter-controls">
+              <FormControl className="sort-control">
+                <InputLabel className="control-label">Sort By</InputLabel>
+                <Select
+                  value={ordering}
+                  label="Sort By"
+                  onChange={(e) => handleOrderingChange(e.target.value)}
+                  className="sort-select"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      {getOrderingIcon(ordering)}
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="-created_at">Latest Posts</MenuItem>
+                  <MenuItem value="-published_at">Recently Published</MenuItem>
+                  <MenuItem value="-views_count">Most Viewed</MenuItem>
+                  <MenuItem value="-likes_count">Most Liked</MenuItem>
+                </Select>
+              </FormControl>
+
+              <Box className="active-filters">
+                {selectedTag && (
+                  <Chip
+                    label={`Topic: ${tags.find(t => t.slug === selectedTag)?.name}`}
+                    onDelete={() => handleTagChange('')}
+                    className="active-filter-chip"
+                    deleteIcon={<Box>×</Box>}
+                  />
+                )}
+                {searchQuery && (
+                  <Chip
+                    label={`Search: "${searchQuery}"`}
+                    onDelete={() => setSearchQuery('')}
+                    className="active-filter-chip"
+                    deleteIcon={<Box>×</Box>}
+                  />
+                )}
+              </Box>
+            </Box>
+
+            {/* Tag Pills */}
+            {tags.length > 0 && (
+              <Box className="tags-section">
+                <Typography variant="subtitle2" className="tags-label">
+                  <FilterListIcon className="tags-icon" />
+                  Filter by Topic
+                </Typography>
+                <Box className="tags-container">
+                  <Chip
+                    label="All Topics"
+                    onClick={() => handleTagChange('')}
+                    className={`tag-pill ${selectedTag === '' ? 'active' : ''}`}
+                    icon={<AutoStoriesIcon />}
+                  />
+                  {tags.slice(0, 8).map((tag) => (
+                    <Chip
+                      key={tag.id}
+                      label={tag.name}
+                      onClick={() => handleTagChange(tag.slug)}
+                      className={`tag-pill ${selectedTag === tag.slug ? 'active' : ''}`}
+                    />
+                  ))}
+                  {tags.length > 8 && (
+                    <Chip
+                      label={`+${tags.length - 8} more`}
+                      className="tag-pill more-tags"
+                      variant="outlined"
+                    />
+                  )}
+                </Box>
+              </Box>
+            )}
+
+            {/* Results Info */}
+            <Box className="results-info">
+              <Typography variant="body2" className="results-text">
+                {getOrderingIcon(ordering)}
+                <span>{getOrderingLabel(ordering)}</span>
+                {selectedTag && (
+                  <span> in <strong>{tags.find(t => t.slug === selectedTag)?.name}</strong></span>
+                )}
+              </Typography>
+            </Box>
+          </Paper>
+        </Container>
+      </section>
+
+      {/* Posts Grid */}
+      <section className="posts-grid-section">
+        <Container maxWidth="lg">
+          {loading ? (
+            <Grid container spacing={4}>
+              {[...Array(6)].map((_, index) => (
+                <Grid item xs={12} md={6} lg={4} key={index}>
+                  <Card className="post-skeleton-card">
+                    <Skeleton variant="rectangular" height={220} />
+                    <CardContent>
+                      <Skeleton variant="text" width="60%" height={24} />
+                      <Skeleton variant="text" width="100%" height={20} />
+                      <Skeleton variant="text" width="80%" height={20} />
+                      <Box sx={{ mt: 2 }}>
+                        <Skeleton variant="circular" width={40} height={40} />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          ) : posts.length === 0 ? (
+            <Box className="empty-state-modern">
+              <div className="empty-illustration">
+                <SearchIcon className="empty-icon" />
+              </div>
+              <Typography variant="h5" className="empty-title">
+                No posts found
+              </Typography>
+              <Typography variant="body1" className="empty-description">
+                Try adjusting your search terms or explore different topics
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => {
+                  setSearchQuery('');
+                  setSelectedTag('');
+                }}
+                className="empty-action-btn"
+                startIcon={<AutoStoriesIcon />}
+              >
+                Browse All Posts
+              </Button>
+            </Box>
+          ) : (
+            <>
+              <Grid container spacing={4}>
+                {posts.map((post, index) => (
+                  <Grid item xs={12} md={6} lg={4} key={post.id}>
+                    <Fade in timeout={600} style={{ transitionDelay: `${index * 100}ms` }}>
+                      <Card
+                        component={RouterLink}
+                        to={`/posts/${post.id}`}
+                        className="modern-post-card"
+                        elevation={0}
+                      >
+                        {/* Featured Image */}
+                        <Box className="card-image-container">
+                          {post.featured_image ? (
+                            <CardMedia
+                              component="img"
+                              height="240"
+                              image={post.featured_image}
+                              alt={post.title}
+                              className="card-image"
+                            />
+                          ) : (
+                            <Box className="card-image-placeholder">
+                              <AutoStoriesIcon className="placeholder-icon" />
+                              <Typography variant="caption" className="placeholder-text">
+                                No Image
+                              </Typography>
+                            </Box>
+                          )}
+
+                          {/* Status Badge */}
+                          <Chip
+                            label={post.status === 'published' ? '✨ Published' : '📝 Draft'}
+                            size="small"
+                            className={`status-badge ${post.status}`}
+                          />
+
+                          {/* Quick Actions */}
+                          <Box className="card-quick-actions">
+                            {isAuthenticated && (
+                              <>
+                                <IconButton
+                                  size="small"
+                                  className="action-btn like-btn"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleLikePost(post.id);
+                                  }}
+                                >
+                                  {post.is_liked ? (
+                                    <FavoriteIcon className="liked" />
+                                  ) : (
+                                    <FavoriteBorderIcon />
+                                  )}
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  className="action-btn bookmark-btn"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleBookmarkPost(post.id);
+                                  }}
+                                >
+                                  {post.is_bookmarked ? (
+                                    <BookmarkIcon className="bookmarked" />
+                                  ) : (
+                                    <BookmarkBorderIcon />
+                                  )}
+                                </IconButton>
+                                <IconButton
+                                  size="small"
+                                  className="action-btn share-btn"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                  }}
+                                >
+                                  <ShareIcon />
+                                </IconButton>
+                              </>
+                            )}
+                          </Box>
+
+                          {/* Reading Time Badge */}
+                          <Box className="reading-time-badge">
+                            <AccessTimeIcon />
+                            <span>{post.reading_time}m read</span>
+                          </Box>
+                        </Box>
+
+                        {/* Card Content */}
+                        <CardContent className="card-content-modern">
+                          {/* Tags */}
+                          {post.tags.length > 0 && (
+                            <Box className="card-tags">
+                              {post.tags.slice(0, 2).map((tag) => (
+                                <Chip
+                                  key={tag.id}
+                                  label={tag.name}
+                                  size="small"
+                                  className="content-tag"
+                                />
+                              ))}
+                              {post.tags.length > 2 && (
+                                <Chip
+                                  label={`+${post.tags.length - 2}`}
+                                  size="small"
+                                  className="content-tag more-tags"
+                                />
+                              )}
+                            </Box>
+                          )}
+
+                          {/* Title */}
+                          <Typography variant="h6" className="card-title">
+                            {post.title}
+                          </Typography>
+
+                          {/* Excerpt */}
+                          <Typography variant="body2" className="card-excerpt">
+                            {post.excerpt || post.content.substring(0, 120) + '...'}
+                          </Typography>
+
+                          {/* Stats Bar */}
+                          <Box className="card-stats-bar">
+                            <Box className="stats-left">
+                              <div className="stat-item">
+                                <FavoriteIcon className="stat-icon likes" />
+                                <span>{post.likes_count}</span>
+                              </div>
+                              <div className="stat-item">
+                                <ChatBubbleOutlineIcon className="stat-icon comments" />
+                                <span>{post.comments_count}</span>
+                              </div>
+                              <div className="stat-item">
+                                <VisibilityIcon className="stat-icon views" />
+                                <span>{post.views_count}</span>
+                              </div>
+                            </Box>
+                          </Box>
+
+                          {/* Author Info */}
+                          <Box className="card-author">
+                            <Avatar
+                              src={post.author.profile_picture || undefined}
+                              className="author-avatar"
+                            >
+                              {post.author.username.charAt(0).toUpperCase()}
+                            </Avatar>
+                            <Box className="author-info">
+                              <Typography variant="subtitle2" className="author-name">
+                                {post.author.username}
+                              </Typography>
+                              <Typography variant="caption" className="publish-date">
+                                {new Date(post.created_at).toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Fade>
+                  </Grid>
+                ))}
+              </Grid>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <Box className="pagination-section">
+                  <Paper className="pagination-container" elevation={0}>
+                    <Pagination
+                      count={totalPages}
+                      page={currentPage}
+                      onChange={handlePageChange}
+                      color="primary"
+                      size="large"
+                      className="pagination-control"
+                      showFirstButton
+                      showLastButton
+                    />
+                    <Typography variant="body2" className="pagination-info">
+                      Page {currentPage} of {totalPages}
+                    </Typography>
+                  </Paper>
+                </Box>
+              )}
+            </>
           )}
-        </>
-      )}
-    </Box>
+        </Container>
+      </section>
+    </div>
   );
 };
 
