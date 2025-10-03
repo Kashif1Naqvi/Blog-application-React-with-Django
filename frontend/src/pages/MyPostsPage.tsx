@@ -9,6 +9,11 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import CommentIcon from '@mui/icons-material/Comment';
 import ArticleIcon from '@mui/icons-material/Article';
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import PublishIcon from '@mui/icons-material/Publish';
+import DraftsIcon from '@mui/icons-material/Drafts';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import { getMyPosts, deletePost, type Post } from '../services/blogService';
 import './MyPostsPage.css';
 
@@ -29,11 +34,12 @@ const MyPostsPage = () => {
   const loadPosts = async () => {
     try {
       setLoading(true);
+      setError(null);
       const data = await getMyPosts();
       setPosts(data.results);
     } catch (err) {
       console.error('Error loading posts:', err);
-      setError('Failed to load your posts');
+      setError('Failed to load posts');
     } finally {
       setLoading(false);
     }
@@ -41,11 +47,11 @@ const MyPostsPage = () => {
 
   const handleDeleteConfirm = async () => {
     if (!selectedPost) return;
-    
+
     try {
       setDeleting(true);
       await deletePost(selectedPost.id);
-      setPosts(posts.filter(p => p.id !== selectedPost.id));
+      setPosts(posts.filter(post => post.id !== selectedPost.id));
       setShowDeleteModal(false);
       setSelectedPost(null);
     } catch (err) {
@@ -63,233 +69,388 @@ const MyPostsPage = () => {
     return true;
   });
 
-  return (
-    <div className="my-posts-page">
-      <Container className="py-4">
-        {/* Header */}
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <div>
-            <h2 className="fw-bold mb-2">My Posts</h2>
-            <p className="text-muted mb-0">Manage your blog posts</p>
-          </div>
-          <Button 
-            variant="primary" 
-            size="lg"
-            as={RouterLink}
-            to="/posts/create"
-          >
-            <AddIcon style={{ fontSize: 20, marginRight: 4 }} />
-            Create New Post
-          </Button>
-        </div>
+  const getTabStats = () => {
+    const published = posts.filter(p => p.status === 'published').length;
+    const drafts = posts.filter(p => p.status === 'draft').length;
+    return { all: posts.length, published, drafts };
+  };
 
+  const stats = getTabStats();
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const formatStats = (num: number) => {
+    if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
+    return num.toString();
+  };
+
+  return (
+    <div className="my-posts-page-enhanced">
+      {/* Enhanced Hero Header */}
+      <section className="posts-hero-section">
+        <div className="hero-gradient-overlay"></div>
+        <Container>
+          <div className="hero-content-wrapper">
+            <div className="hero-text-section">
+              <div className="hero-badge">
+                <ArticleIcon className="badge-icon" />
+                <span>My Content</span>
+              </div>
+              <h1 className="hero-title">My Posts</h1>
+              <p className="hero-subtitle">
+                Create, manage, and track your blog posts. Share your thoughts with the world!
+              </p>
+              
+              {/* Hero Stats */}
+              <div className="hero-stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon-wrapper">
+                    <AutoStoriesIcon className="stat-icon" />
+                  </div>
+                  <div className="stat-info">
+                    <div className="stat-number">{stats.all}</div>
+                    <div className="stat-label">Total Posts</div>
+                  </div>
+                </div>
+                
+                <div className="stat-card">
+                  <div className="stat-icon-wrapper published">
+                    <PublishIcon className="stat-icon" />
+                  </div>
+                  <div className="stat-info">
+                    <div className="stat-number">{stats.published}</div>
+                    <div className="stat-label">Published</div>
+                  </div>
+                </div>
+                
+                <div className="stat-card">
+                  <div className="stat-icon-wrapper drafts">
+                    <DraftsIcon className="stat-icon" />
+                  </div>
+                  <div className="stat-info">
+                    <div className="stat-number">{stats.drafts}</div>
+                    <div className="stat-label">Drafts</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      <Container className="posts-content-section">
         {/* Error Alert */}
         {error && (
-          <Alert variant="danger" dismissible onClose={() => setError(null)}>
-            {error}
+          <Alert variant="danger" dismissible onClose={() => setError(null)} className="error-alert-enhanced">
+            <div className="alert-content">
+              <div className="alert-icon">⚠️</div>
+              <div>{error}</div>
+            </div>
           </Alert>
         )}
 
-        {/* Tabs */}
-        <Nav variant="tabs" className="mb-4">
-          <Nav.Item>
-            <Nav.Link 
-              active={activeTab === 'all'} 
-              onClick={() => setActiveTab('all')}
-            >
-              All ({posts.length})
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link 
-              active={activeTab === 'published'} 
-              onClick={() => setActiveTab('published')}
-            >
-              Published ({posts.filter(p => p.status === 'published').length})
-            </Nav.Link>
-          </Nav.Item>
-          <Nav.Item>
-            <Nav.Link 
-              active={activeTab === 'drafts'} 
-              onClick={() => setActiveTab('drafts')}
-            >
-              Drafts ({posts.filter(p => p.status === 'draft').length})
-            </Nav.Link>
-          </Nav.Item>
-        </Nav>
+        {/* Enhanced Tabs */}
+        <div className="tabs-section-enhanced">
+          <Nav variant="pills" className="posts-nav-enhanced">
+            <Nav.Item>
+              <Nav.Link 
+                active={activeTab === 'all'}
+                onClick={() => setActiveTab('all')}
+                className="nav-link-enhanced"
+              >
+                <ArticleIcon className="nav-icon" />
+                <span>All Posts</span>
+                <Badge className="nav-badge">{stats.all}</Badge>
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link 
+                active={activeTab === 'published'}
+                onClick={() => setActiveTab('published')}
+                className="nav-link-enhanced"
+              >
+                <PublishIcon className="nav-icon" />
+                <span>Published</span>
+                <Badge className="nav-badge published">{stats.published}</Badge>
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link 
+                active={activeTab === 'drafts'}
+                onClick={() => setActiveTab('drafts')}
+                className="nav-link-enhanced"
+              >
+                <DraftsIcon className="nav-icon" />
+                <span>Drafts</span>
+                <Badge className="nav-badge drafts">{stats.drafts}</Badge>
+              </Nav.Link>
+            </Nav.Item>
+            <Nav.Item>
+              <Nav.Link
+                active={activeTab === 'create'} 
+                onClick={() => navigate("/posts/create")}
+                className="nav-link-enhanced"
+              >
+                Create
+              </Nav.Link>
+            </Nav.Item>
+          </Nav>
+        </div>
 
-        {/* Loading State */}
+        {/* Posts Grid */}
         {loading ? (
-          <div className="text-center py-5">
-            <Spinner animation="border" variant="primary" />
+          <div className="loading-section">
+            <div className="loading-spinner">
+              <Spinner animation="border" variant="primary" />
+              <p>Loading your posts...</p>
+            </div>
           </div>
         ) : filteredPosts.length === 0 ? (
-          <div className="text-center py-5">
-            <ArticleIcon style={{ fontSize: 80, color: '#cbd5e1' }} />
-            <h5 className="text-muted mt-3">No posts found</h5>
-            <p className="text-muted">
-              {activeTab === 'drafts' 
-                ? "You don't have any draft posts"
+          <div className="empty-state-enhanced">
+            <div className="empty-illustration">
+              <ArticleIcon className="empty-icon" />
+            </div>
+            <h3 className="empty-title">
+              {activeTab === 'all' ? 'No posts yet' : 
+               activeTab === 'published' ? 'No published posts' : 'No drafts'}
+            </h3>
+            <p className="empty-description">
+              {activeTab === 'all' 
+                ? 'Start sharing your thoughts with the world by creating your first post!'
                 : activeTab === 'published'
-                ? "You haven't published any posts yet"
-                : "Start creating your first post"
-              }
+                ? 'Publish your drafts to share them with the community.'
+                : 'Save your work as drafts and publish when ready.'}
             </p>
-            {activeTab === 'all' && (
-              <Button 
-                variant="primary"
-                as={RouterLink}
-                to="/posts/create"
-              >
-                <AddIcon style={{ fontSize: 20, marginRight: 4 }} />
-                Create Your First Post
-              </Button>
-            )}
+            <Button 
+              className="empty-action-btn"
+              as={RouterLink}
+              to="/posts/create"
+            >
+              <AddIcon className="me-2" />
+              Create Your First Post
+            </Button>
           </div>
         ) : (
-          <Row className="g-4">
-            {filteredPosts.map((post) => (
-              <Col lg={4} md={12} key={post.id}>
-                <Card className="h-100 border-0 shadow-sm post-card">
-                  {post.featured_image && (
-                    <Card.Img 
-                      variant="top" 
-                      src={post.featured_image} 
-                      alt={post.title}
-                      style={{ height: 200, objectFit: 'cover' }}
-                    />
-                  )}
-                  
-                  <Card.Body className="d-flex flex-column">
-                    <div className="d-flex justify-content-between align-items-start mb-3">
-                      <div className="flex-grow-1">
-                        <div className="d-flex gap-2 mb-2 flex-wrap">
-                          <Badge 
-                            bg={post.status === 'published' ? 'success' : 'secondary'}
-                          >
-                            {post.status}
-                          </Badge>
-                          {post.tags.slice(0, 2).map((tag) => (
-                            <Badge key={tag.id} bg="primary" className="fw-normal">
-                              {tag.name}
-                            </Badge>
-                          ))}
+          <Row className="posts-grid-enhanced">
+            {filteredPosts.map((post, index) => (
+              <Col xl={4} lg={6} md={6} key={post.id} className="mb-4">
+                <div className="post-card-enhanced" style={{ animationDelay: `${index * 100}ms` }}>
+                  {/* Featured Image */}
+                  <div className="post-image-container">
+                    {post.featured_image ? (
+                      <img 
+                        src={post.featured_image} 
+                        alt={post.title}
+                        className="post-image"
+                      />
+                    ) : (
+                      <div className="post-image-placeholder">
+                        <AutoStoriesIcon className="placeholder-icon" />
+                      </div>
+                    )}
+                    
+                    {/* Status Badge */}
+                    <div className={`status-badge-enhanced ${post.status}`}>
+                      {post.status === 'published' ? (
+                        <>
+                          <PublishIcon className="status-icon" />
+                          <span>Published</span>
+                        </>
+                      ) : (
+                        <>
+                          <DraftsIcon className="status-icon" />
+                          <span>Draft</span>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Quick Actions Overlay */}
+                    <div className="quick-actions-overlay">
+                      <Button
+                        variant="light"
+                        size="sm"
+                        as={RouterLink}
+                        to={`/posts/${post.id}`}
+                        className="quick-action-btn view"
+                      >
+                        <VisibilityIcon />
+                      </Button>
+                      <Button
+                        variant="light"
+                        size="sm"
+                        as={RouterLink}
+                        to={`/posts/edit/${post.id}`}
+                        className="quick-action-btn edit"
+                      >
+                        <EditIcon />
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Post Content */}
+                  <div className="post-content-enhanced">
+                    {/* Tags */}
+                    {post.tags.length > 0 && (
+                      <div className="post-tags-enhanced">
+                        {post.tags.slice(0, 2).map((tag) => (
+                          <span key={tag.id} className="tag-pill-enhanced">
+                            {tag.name}
+                          </span>
+                        ))}
+                        {post.tags.length > 2 && (
+                          <span className="tag-pill-enhanced more">
+                            +{post.tags.length - 2}
+                          </span>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Title */}
+                    <h3 className="post-title-enhanced">
+                      <RouterLink to={`/posts/${post.id}`} className="title-link">
+                        {post.title}
+                      </RouterLink>
+                    </h3>
+
+                    {/* Excerpt */}
+                    <p className="post-excerpt-enhanced">
+                      {post.excerpt || post.content.substring(0, 120) + '...'}
+                    </p>
+
+                    {/* Enhanced Stats Bar */}
+                    <div className="stats-bar-enhanced">
+                      <div className="stats-left">
+                        <div className="stat-item-enhanced">
+                          <VisibilityIcon className="stat-icon views" />
+                          <span>{formatStats(post.views_count)}</span>
                         </div>
-                        <h5 className="fw-bold mb-2">{post.title}</h5>
+                        <div className="stat-item-enhanced">
+                          <ThumbUpIcon className="stat-icon likes" />
+                          <span>{formatStats(post.likes_count)}</span>
+                        </div>
+                        <div className="stat-item-enhanced">
+                          <CommentIcon className="stat-icon comments" />
+                          <span>{formatStats(post.comments_count)}</span>
+                        </div>
+                        <div className="stat-item-enhanced reading-time">
+                          <AccessTimeIcon className="stat-icon time" />
+                          <span>{post.reading_time}m</span>
+                        </div>
                       </div>
                       
-                      <Dropdown>
+                      <Dropdown align="end">
                         <Dropdown.Toggle 
                           variant="link" 
-                          className="text-muted p-0"
-                          style={{ textDecoration: 'none' }}
+                          className="post-menu-btn"
                         >
                           <MoreVertIcon />
                         </Dropdown.Toggle>
-                        <Dropdown.Menu align="end">
-                          <Dropdown.Item 
-                            as={RouterLink} 
-                            to={`/posts/${post.id}`}
-                          >
-                            <VisibilityIcon style={{ fontSize: 18, marginRight: 8 }} />
-                            View
+                        <Dropdown.Menu className="post-menu-enhanced">
+                          <Dropdown.Item as={RouterLink} to={`/posts/${post.id}`}>
+                            <VisibilityIcon className="menu-icon" />
+                            View Post
                           </Dropdown.Item>
-                          <Dropdown.Item 
-                            as={RouterLink} 
-                            to={`/posts/edit/${post.id}`}
-                          >
-                            <EditIcon style={{ fontSize: 18, marginRight: 8 }} />
-                            Edit
+                          <Dropdown.Item as={RouterLink} to={`/posts/edit/${post.id}`}>
+                            <EditIcon className="menu-icon" />
+                            Edit Post
                           </Dropdown.Item>
                           <Dropdown.Divider />
                           <Dropdown.Item 
-                            className="text-danger"
+                            className="delete-item"
                             onClick={() => {
                               setSelectedPost(post);
                               setShowDeleteModal(true);
                             }}
                           >
-                            <DeleteIcon style={{ fontSize: 18, marginRight: 8 }} />
-                            Delete
+                            <DeleteIcon className="menu-icon" />
+                            Delete Post
                           </Dropdown.Item>
                         </Dropdown.Menu>
                       </Dropdown>
                     </div>
-                    
-                    <p className="text-muted mb-3 flex-grow-1" style={{
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
-                    }}>
-                      {post.excerpt}
-                    </p>
-                    
-                    <div className="d-flex gap-4 text-muted">
-                      <div className="d-flex align-items-center gap-1">
-                        <VisibilityIcon style={{ fontSize: 18 }} />
-                        <small>{post.views_count}</small>
-                      </div>
-                      <div className="d-flex align-items-center gap-1">
-                        <ThumbUpIcon style={{ fontSize: 18 }} />
-                        <small>{post.likes_count}</small>
-                      </div>
-                      <div className="d-flex align-items-center gap-1">
-                        <CommentIcon style={{ fontSize: 18 }} />
-                        <small>{post.comments_count}</small>
-                      </div>
+
+                    {/* Publication Date */}
+                    <div className="post-date-enhanced">
+                      <AccessTimeIcon className="date-icon" />
+                      <span>
+                        {post.status === 'published' && post.published_at
+                          ? `Published ${formatDate(post.published_at)}`
+                          : `Created ${formatDate(post.created_at)}`}
+                      </span>
                     </div>
-                    
-                    <small className="text-muted mt-3">
-                      {new Date(post.created_at).toLocaleDateString()}
-                    </small>
-                  </Card.Body>
-                </Card>
+                  </div>
+                </div>
               </Col>
             ))}
           </Row>
         )}
       </Container>
 
-      {/* Delete Confirmation Modal */}
+      {/* Enhanced Delete Modal */}
       <Modal 
         show={showDeleteModal} 
         onHide={() => !deleting && setShowDeleteModal(false)}
         centered
+        className="delete-modal-enhanced"
       >
-        <Modal.Header closeButton>
-          <Modal.Title>Delete Post?</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          Are you sure you want to delete <strong>"{selectedPost?.title}"</strong>? 
-          This action cannot be undone.
-        </Modal.Body>
-        <Modal.Footer>
-          <Button 
-            variant="secondary" 
-            onClick={() => setShowDeleteModal(false)}
-            disabled={deleting}
-          >
-            Cancel
-          </Button>
-          <Button 
-            variant="danger" 
-            onClick={handleDeleteConfirm}
-            disabled={deleting}
-          >
-            {deleting ? (
-              <>
-                <Spinner animation="border" size="sm" className="me-2" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <DeleteIcon style={{ fontSize: 18, marginRight: 4 }} />
-                Delete
-              </>
-            )}
-          </Button>
-        </Modal.Footer>
+        <div className="modal-content-enhanced">
+          <Modal.Header className="modal-header-enhanced">
+            <div className="modal-icon-wrapper danger">
+              <DeleteIcon />
+            </div>
+            <div>
+              <Modal.Title className="modal-title-enhanced">Delete Post?</Modal.Title>
+              <p className="modal-subtitle">This action cannot be undone</p>
+            </div>
+          </Modal.Header>
+          
+          <Modal.Body className="modal-body-enhanced">
+            <div className="delete-confirmation">
+              <p>Are you sure you want to delete:</p>
+              <div className="post-preview">
+                <strong>"{selectedPost?.title}"</strong>
+              </div>
+              <p className="warning-text">
+                This will permanently remove the post and all its comments.
+              </p>
+            </div>
+          </Modal.Body>
+          
+          <Modal.Footer className="modal-footer-enhanced">
+            <Button 
+              variant="outline-secondary" 
+              onClick={() => setShowDeleteModal(false)}
+              disabled={deleting}
+              className="cancel-btn-enhanced"
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="danger" 
+              onClick={handleDeleteConfirm}
+              disabled={deleting}
+              className="delete-btn-enhanced"
+            >
+              {deleting ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Deleting...
+                </>
+              ) : (
+                <>
+                  <DeleteIcon className="me-2" />
+                  Delete Post
+                </>
+              )}
+            </Button>
+          </Modal.Footer>
+        </div>
       </Modal>
     </div>
   );

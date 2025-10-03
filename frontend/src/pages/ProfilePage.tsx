@@ -12,6 +12,9 @@ import CameraAltIcon from '@mui/icons-material/CameraAlt';
 import SaveIcon from '@mui/icons-material/Save';
 import CloseIcon from '@mui/icons-material/Close';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import StarIcon from '@mui/icons-material/Star';
+import AutoFixHighIcon from '@mui/icons-material/AutoFixHigh';
 import { Box, Typography, Avatar, Chip, IconButton } from '@mui/material';
 import './ProfilePage.css';
 
@@ -45,10 +48,10 @@ const ProfilePage = () => {
         
         const updatedUser = await updateProfile(formData);
         updateUser(updatedUser);
-        setSuccess('Profile updated successfully!');
+        setSuccess('Profile updated successfully! ✨');
         setShowEditModal(false);
         
-        setTimeout(() => setSuccess(''), 3000);
+        setTimeout(() => setSuccess(''), 4000);
       } catch (err: any) {
         setError(err.response?.data?.message || 'Failed to update profile');
       } finally {
@@ -79,73 +82,100 @@ const ProfilePage = () => {
   if (!user) {
     return (
       <Container className="py-5 text-center">
-        <Spinner animation="border" variant="primary" />
+        <div className="loading-container">
+          <Spinner animation="border" variant="primary" />
+          <Typography variant="h6" className="mt-3">Loading your profile...</Typography>
+        </div>
       </Container>
     );
   }
 
   return (
-    <div className="profile-page-modern">
-      {/* Hero Section with Cover */}
-      <section className="profile-hero-modern">
-        <div className="profile-cover-gradient"></div>
+    <div className="profile-page-enhanced">
+      {/* Enhanced Hero Section with Glassmorphism */}
+      <section className="profile-hero-enhanced">
+        <div className="hero-gradient-bg"></div>
+        <div className="hero-pattern-overlay"></div>
+        
         <Container>
-          <div className="profile-main-card">
+          <div className="profile-glassmorphism-card">
             {/* Profile Header */}
-            <div className="profile-header-modern">
-              <div className="profile-avatar-section">
-                <div className="profile-avatar-modern">
-                  {user.profile_picture ? (
-                    <Image 
-                      src={user.profile_picture} 
-                      alt={user.username}
-                      className="profile-image"
-                    />
-                  ) : (
-                    <div className="profile-avatar-placeholder-modern">
-                      <PersonIcon className="placeholder-icon" />
-                    </div>
-                  )}
-                  <div className="profile-status-indicator online"></div>
+            <div className="profile-header-enhanced">
+              <div className="profile-avatar-section-enhanced">
+                <div className="avatar-glow-wrapper">
+                  <div className="profile-avatar-enhanced">
+                    {user.profile_picture ? (
+                      <Image 
+                        src={user.profile_picture} 
+                        alt={user.username}
+                        className="profile-image-enhanced"
+                      />
+                    ) : (
+                      <div className="profile-avatar-placeholder-enhanced">
+                        <PersonIcon className="placeholder-icon-enhanced" />
+                      </div>
+                    )}
+                    <div className="profile-status-glow"></div>
+                  </div>
                 </div>
                 
                 <Button 
-                  className="profile-edit-btn"
+                  className="edit-profile-btn-enhanced"
                   onClick={() => setShowEditModal(true)}
                 >
-                  <EditIcon className="me-2" />
+                  <EditIcon className="btn-icon" />
                   Edit Profile
                 </Button>
               </div>
 
-              <div className="profile-info-modern">
-                <div className="profile-name-section">
-                  <h1 className="profile-name-modern">{user.username}</h1>
-                  <Chip 
-                    label="Member" 
-                    className="profile-badge"
-                    size="small"
-                  />
+              <div className="profile-info-enhanced">
+                <div className="profile-name-section-enhanced">
+                  <h1 className="profile-name-enhanced">{user.username}</h1>
+                  <div className="profile-badges">
+                    <Chip 
+                      icon={<VerifiedIcon className="badge-icon" />}
+                      label="Member" 
+                      className="member-badge-enhanced"
+                      size="small"
+                    />
+                    <Chip 
+                      icon={<StarIcon className="badge-icon" />}
+                      label="Verified" 
+                      className="verified-badge-enhanced"
+                      size="small"
+                    />
+                  </div>
                 </div>
 
-                <div className="profile-details-grid">
-                  <div className="detail-item">
-                    <EmailIcon className="detail-icon" />
-                    <span className="detail-text">{user.email}</span>
+                <div className="profile-details-enhanced">
+                  <div className="detail-card">
+                    <EmailIcon className="detail-icon-enhanced" />
+                    <div className="detail-content">
+                      <span className="detail-label">Email Address</span>
+                      <span className="detail-value">{user.email}</span>
+                    </div>
                   </div>
-                  <div className="detail-item">
-                    <CalendarTodayIcon className="detail-icon" />
-                    <span className="detail-text">
-                      Joined {new Date().toLocaleDateString('en-US', { 
-                        month: 'long', 
-                        year: 'numeric' 
-                      })}
-                    </span>
+                  
+                  <div className="detail-card">
+                    <CalendarTodayIcon className="detail-icon-enhanced" />
+                    <div className="detail-content">
+                      <span className="detail-label">Member Since</span>
+                      <span className="detail-value">
+                        {new Date().toLocaleDateString('en-US', { 
+                          month: 'long', 
+                          year: 'numeric' 
+                        })}
+                      </span>
+                    </div>
                   </div>
+
                   {user.bio && (
-                    <div className="detail-item full-width">
-                      <PersonIcon className="detail-icon" />
-                      <span className="detail-text">{user.bio}</span>
+                    <div className="detail-card bio-card">
+                      <PersonIcon className="detail-icon-enhanced" />
+                      <div className="detail-content">
+                        <span className="detail-label">About Me</span>
+                        <span className="detail-value bio-text">{user.bio}</span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -155,80 +185,115 @@ const ProfilePage = () => {
         </Container>
       </section>
 
-      {/* Alerts */}
-      <Container className="mt-4">
+      {/* Enhanced Alerts */}
+      <Container className="alerts-section">
         {success && (
-          <Alert variant="success" dismissible onClose={() => setSuccess('')} className="modern-alert success">
-            <div className="alert-content">
-              <div className="alert-icon">✅</div>
-              <div>{success}</div>
+          <Alert variant="success" dismissible onClose={() => setSuccess('')} className="alert-enhanced success">
+            <div className="alert-content-enhanced">
+              <div className="alert-icon">✨</div>
+              <div className="alert-text">{success}</div>
             </div>
           </Alert>
         )}
         {error && (
-          <Alert variant="danger" dismissible onClose={() => setError('')} className="modern-alert error">
-            <div className="alert-content">
-              <div className="alert-icon">❌</div>
-              <div>{error}</div>
+          <Alert variant="danger" dismissible onClose={() => setError('')} className="alert-enhanced error">
+            <div className="alert-content-enhanced">
+              <div className="alert-icon">⚠️</div>
+              <div className="alert-text">{error}</div>
             </div>
           </Alert>
         )}
       </Container>
 
-      {/* About Section */}
-      <Container className="mt-5 mb-5">
-        <Card className="modern-content-card">
-          <Card.Body className="about-content">
-            <h4 className="about-title">About {user.username}</h4>
+      {/* Enhanced About Section */}
+      <Container className="about-section-container">
+        <Card className="about-card-enhanced">
+          <Card.Body className="about-content-enhanced">
+            <div className="about-header">
+              <div className="about-icon-wrapper">
+                <PersonIcon className="about-main-icon" />
+              </div>
+              <h4 className="about-title-enhanced">About {user.username}</h4>
+              <p className="about-subtitle">Get to know more about this amazing member</p>
+            </div>
             
-            <div className="about-grid-single">
-              <div className="about-section">
-                <h6 className="about-section-title">
-                  <PersonIcon className="section-icon" />
-                  Personal Information
-                </h6>
-                <div className="about-details">
-                  <div className="about-item">
-                    <span className="about-label">Username:</span>
-                    <span className="about-value">{user.username}</span>
-                  </div>
-                  <div className="about-item">
-                    <span className="about-label">Email:</span>
-                    <span className="about-value">{user.email}</span>
-                  </div>
-                  <div className="about-item">
-                    <span className="about-label">Bio:</span>
-                    <span className="about-value">
-                      {user.bio || 'No bio provided yet. Click "Edit Profile" to add one!'}
-                    </span>
-                  </div>
-                  <div className="about-item">
-                    <span className="about-label">Member Since:</span>
-                    <span className="about-value">
-                      {new Date().toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </span>
-                  </div>
+            <div className="about-info-grid">
+              <div className="info-item-enhanced">
+                <div className="info-icon-circle">
+                  <PersonIcon />
+                </div>
+                <div className="info-content">
+                  <h6 className="info-title">Username</h6>
+                  <p className="info-value">{user.username}</p>
+                </div>
+              </div>
+
+              <div className="info-item-enhanced">
+                <div className="info-icon-circle">
+                  <EmailIcon />
+                </div>
+                <div className="info-content">
+                  <h6 className="info-title">Email</h6>
+                  <p className="info-value">{user.email}</p>
+                </div>
+              </div>
+
+              <div className="info-item-enhanced bio-item">
+                <div className="info-icon-circle">
+                  <AutoFixHighIcon />
+                </div>
+                <div className="info-content">
+                  <h6 className="info-title">Bio</h6>
+                  <p className="info-value bio-enhanced">
+                    {user.bio || (
+                      <span className="no-bio">
+                        <em>No bio provided yet. Share something interesting about yourself!</em>
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              <div className="info-item-enhanced">
+                <div className="info-icon-circle">
+                  <CalendarTodayIcon />
+                </div>
+                <div className="info-content">
+                  <h6 className="info-title">Joined</h6>
+                  <p className="info-value">
+                    {new Date().toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </p>
                 </div>
               </div>
             </div>
 
-            {/* Call to Action */}
-            <div className="profile-cta">
-              <div className="cta-content">
-                <h5 className="cta-title">Complete Your Profile</h5>
-                <p className="cta-description">
-                  Add a bio to tell others about yourself and make your profile more engaging!
+            {/* Enhanced Call to Action */}
+            <div className="cta-section-enhanced">
+              <div className="cta-illustration">
+                <AutoFixHighIcon className="cta-icon" />
+                <div className="cta-sparkles">
+                  <span className="sparkle">✨</span>
+                  <span className="sparkle">🌟</span>
+                  <span className="sparkle">💫</span>
+                </div>
+              </div>
+              <div className="cta-content-enhanced">
+                <h5 className="cta-title-enhanced">Complete Your Profile</h5>
+                <p className="cta-description-enhanced">
+                  Add a personal bio to tell your story and connect with the community! 
+                  Make your profile shine and stand out from the crowd.
                 </p>
                 <Button 
-                  className="cta-btn"
+                  className="btn-info verified-badge-enhanced"
                   onClick={() => setShowEditModal(true)}
                 >
-                  <EditIcon className="me-2" />
-                  Update Profile
+                  <AutoFixHighIcon className="btn-icon" />
+                  <span>Update Profile</span>
+                  <div className="btn-glow"></div>
                 </Button>
               </div>
             </div>
@@ -236,53 +301,61 @@ const ProfilePage = () => {
         </Card>
       </Container>
 
-      {/* Modern Edit Profile Modal */}
+      {/* Enhanced Edit Profile Modal */}
       <Modal 
         show={showEditModal} 
         onHide={() => setShowEditModal(false)}
         centered
         size="lg"
-        className="modern-profile-modal"
+        className="edit-modal-enhanced"
       >
-        <div className="modal-content-modern">
-          <Modal.Header className="modal-header-modern">
-            <div className="modal-title-section">
-              <EditIcon className="modal-icon" />
-              <h4 className="modal-title">Edit Profile</h4>
+        <div className="modal-content-enhanced">
+          <Modal.Header className="modal-header-enhanced">
+            <div className="modal-title-section-enhanced">
+              <div className="modal-icon-wrapper">
+                <EditIcon className="modal-icon-enhanced" />
+              </div>
+              <div>
+                <h4 className="modal-title-enhanced">Edit Profile</h4>
+                <p className="modal-subtitle">Update your information and make it shine</p>
+              </div>
             </div>
             <IconButton 
               onClick={() => setShowEditModal(false)}
-              className="modal-close-btn"
+              className="modal-close-btn-enhanced"
             >
               <CloseIcon />
             </IconButton>
           </Modal.Header>
 
           <Form onSubmit={formik.handleSubmit}>
-            <Modal.Body className="modal-body-modern">
-              {/* Profile Picture Section */}
-              <div className="edit-avatar-section">
-                <div className="edit-avatar-preview">
-                  {imagePreview ? (
-                    <Image 
-                      src={imagePreview} 
-                      alt="Preview"
-                      className="preview-image"
-                    />
-                  ) : (
-                    <div className="preview-placeholder">
-                      <PersonIcon className="placeholder-icon-large" />
+            <Modal.Body className="modal-body-enhanced">
+              {/* Enhanced Avatar Section */}
+              <div className="edit-avatar-section-enhanced">
+                <div className="avatar-preview-container">
+                  <div className="avatar-preview-enhanced">
+                    {imagePreview ? (
+                      <Image 
+                        src={imagePreview} 
+                        alt="Preview"
+                        className="preview-image-enhanced"
+                      />
+                    ) : (
+                      <div className="preview-placeholder-enhanced">
+                        <PersonIcon className="placeholder-icon-large-enhanced" />
+                      </div>
+                    )}
+                    <div className="avatar-overlay-enhanced">
+                      <CameraAltIcon className="camera-icon-enhanced" />
+                      <span>Change Photo</span>
                     </div>
-                  )}
-                  <div className="avatar-overlay">
-                    <CameraAltIcon className="camera-icon" />
                   </div>
                 </div>
 
-                <div className="avatar-actions">
-                  <Form.Label className="upload-btn">
-                    <CameraAltIcon className="me-2" />
-                    Change Photo
+                <div className="avatar-actions-enhanced">
+                  <Form.Label className="upload-btn-enhanced">
+                    <CameraAltIcon className="upload-icon" />
+                    Choose New Photo
                     <Form.Control
                       type="file"
                       accept="image/*"
@@ -290,35 +363,35 @@ const ProfilePage = () => {
                       hidden
                     />
                   </Form.Label>
-                  <p className="upload-hint">
-                    Recommended: Square image, at least 400x400px
+                  <p className="upload-hint-enhanced">
+                    Recommended: Square image, at least 400x400px (JPG, PNG)
                   </p>
                 </div>
               </div>
 
-              {/* Bio Section */}
-              <div className="edit-bio-section">
+              {/* Enhanced Bio Section */}
+              <div className="edit-bio-section-enhanced">
                 <Form.Group>
-                  <Form.Label className="modern-form-label">
-                    <PersonIcon className="label-icon" />
-                    Bio
+                  <Form.Label className="form-label-enhanced">
+                    <AutoFixHighIcon className="label-icon-enhanced" />
+                    <span>Tell Your Story</span>
                   </Form.Label>
                   <Form.Control
                     as="textarea"
-                    rows={4}
+                    rows={5}
                     name="bio"
-                    placeholder="Tell us about yourself, your interests, and what you're passionate about..."
+                    placeholder="Share something interesting about yourself, your passions, hobbies, or what makes you unique..."
                     value={formik.values.bio}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
                     isInvalid={formik.touched.bio && !!formik.errors.bio}
-                    className="modern-textarea"
+                    className="textarea-enhanced"
                   />
                   <Form.Control.Feedback type="invalid">
                     {formik.errors.bio}
                   </Form.Control.Feedback>
-                  <div className="character-count">
-                    <span className={formik.values.bio.length > 400 ? 'warning' : ''}>
+                  <div className="character-count-enhanced">
+                    <span className={`count ${formik.values.bio.length > 400 ? 'warning' : ''}`}>
                       {formik.values.bio.length}/500 characters
                     </span>
                   </div>
@@ -326,12 +399,12 @@ const ProfilePage = () => {
               </div>
             </Modal.Body>
 
-            <Modal.Footer className="modal-footer-modern">
+            <Modal.Footer className="modal-footer-enhanced">
               <Button 
                 variant="outline-secondary" 
                 onClick={() => setShowEditModal(false)}
                 disabled={loading}
-                className="cancel-btn"
+                className="cancel-btn-enhanced"
               >
                 Cancel
               </Button>
@@ -339,25 +412,26 @@ const ProfilePage = () => {
                 variant="primary" 
                 type="submit"
                 disabled={loading}
-                className="save-btn"
+                className="save-btn-enhanced"
               >
                 {loading ? (
                   <>
                     <Spinner animation="border" size="sm" className="me-2" />
-                    Saving...
+                    <span>Saving...</span>
                   </>
                 ) : (
                   <>
-                    <SaveIcon className="me-2" />
-                    Save Changes
+                    <SaveIcon className="btn-icon" />
+                    <span>Save Changes</span>
+                    <div className="btn-shine"></div>
                   </>
                 )}
               </Button>
             </Modal.Footer>
-          </Form>
-        </div>
-      </Modal>
-    </div>
+            </Form>
+          </div>
+        </Modal>
+      </div>
   );
 };
 
