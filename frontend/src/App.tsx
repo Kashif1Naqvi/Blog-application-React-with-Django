@@ -11,6 +11,8 @@ import PostDetailPage from './pages/PostDetailPage';
 import PostFormPage from './pages/PostFormPage';
 import MyPostsPage from './pages/MyPostsPage';
 import ProfilePage from './pages/ProfilePage';
+import { HelmetProvider } from 'react-helmet-async';
+import { ThemeProvider as CustomThemeProvider } from './contexts/ThemeContext';
 
 const modernTheme = createTheme({
   palette: {
@@ -337,54 +339,59 @@ const modernTheme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={modernTheme}>
-      <CssBaseline />
-      <AuthProvider>
-        <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/register" element={<RegisterPage />} />
-              <Route path="/posts" element={<PostsListPage />} />
-              <Route path="/posts/:id" element={<PostDetailPage />} />
-              <Route 
-                path="/posts/create" 
-                element={
-                  <ProtectedRoute>
-                    <PostFormPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/posts/edit/:id" 
-                element={
-                  <ProtectedRoute>
-                    <PostFormPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/my-posts" 
-                element={
-                  <ProtectedRoute>
-                    <MyPostsPage />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/profile" 
-                element={
-                  <ProtectedRoute>
-                    <ProfilePage />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
-          </Layout>
-        </BrowserRouter>
-      </AuthProvider>
-    </ThemeProvider>
+    <HelmetProvider>
+      <CustomThemeProvider>
+        <ThemeProvider theme={modernTheme}>
+          <CssBaseline />
+          <AuthProvider>
+            <BrowserRouter>
+              <Layout>
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/register" element={<RegisterPage />} />
+                  <Route path="/posts" element={<PostsListPage />} />
+                  <Route path="/posts/:id" element={<PostDetailPage />} />
+                  <Route 
+                    path="/posts/create" 
+                    element={
+                      <ProtectedRoute>
+                        <PostFormPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/posts/edit/:id" 
+                    element={
+                      <ProtectedRoute>
+                        <PostFormPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/my-posts" 
+                    element={
+                      <ProtectedRoute>
+                        <MyPostsPage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="/profile" 
+                    element={
+                      <ProtectedRoute>
+                        <ProfilePage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                </Routes>
+              </Layout>
+            </BrowserRouter>
+          </AuthProvider>
+        </ThemeProvider>
+      </CustomThemeProvider>
+    </HelmetProvider>
+
   );
 }
 

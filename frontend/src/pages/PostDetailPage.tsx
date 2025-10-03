@@ -47,6 +47,8 @@ import {
   type Comment,
 } from '../services/blogService';
 import LikeButton from '../components/LikeButton';
+import SEOHead from '../components/SEOHead';
+import SocialShare from '../components/SocialShare';
 
 const PostDetailPage = () => {
   const { id } = useParams();
@@ -408,6 +410,16 @@ const PostDetailPage = () => {
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto' }}>
+      <SEOHead
+        title={post?.title}
+        description={post?.excerpt || post?.content.substring(0, 160)}
+        keywords={post?.tags.map(tag => tag.name).join(', ')}
+        image={post?.featured_image}
+        type="article"
+        author={post?.author.username}
+        publishedTime={post?.published_at}
+        modifiedTime={post?.updated_at}
+      />
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
@@ -527,6 +539,13 @@ const PostDetailPage = () => {
           Share
         </Button>
       </Stack>
+
+      <SocialShare
+        title={post?.title || ''}
+        url={window.location.href}
+        description={post?.excerpt}
+        hashtags={post?.tags.map(tag => tag.name) || []}
+      />
 
       <Divider sx={{ mb: 4 }} />
 

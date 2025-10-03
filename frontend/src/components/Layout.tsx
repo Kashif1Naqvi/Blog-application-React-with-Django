@@ -13,7 +13,7 @@ import {
   ListItemIcon,
   ListItemText,
   Divider,
-  useTheme,
+  useTheme as useMuiTheme, // Rename MUI's useTheme
   useMediaQuery,
   IconButton,
   Avatar,
@@ -34,6 +34,8 @@ import AppRegistrationIcon from '@mui/icons-material/AppRegistration';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { useState } from 'react';
+import ThemeToggle from './ThemeToggle';
+import { useTheme as useCustomTheme } from '../contexts/ThemeContext'; // Rename custom useTheme
 
 interface LayoutProps {
   children: ReactNode;
@@ -44,8 +46,9 @@ const DRAWER_WIDTH_COLLAPSED = 72;
 
 const Layout = ({ children }: LayoutProps) => {
   const { isAuthenticated, logout, user } = useAuth();
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const muiTheme = useMuiTheme(); // MUI theme for breakpoints
+  const customTheme = useCustomTheme(); // Custom theme for dark/light mode
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down('md')); // Use MUI theme for breakpoints
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopOpen, setDesktopOpen] = useState(true);
   const location = useLocation();
@@ -128,8 +131,8 @@ const Layout = ({ children }: LayoutProps) => {
           ) : (
             <Box sx={{ 
               p: 2,
-              borderRadius: 3,
-              background: 'linear-gradient(135deg, #eff6ff 0%, #f3f4f6 100%)',
+              borderRadius: 1,
+              background: 'linear-gradient(135deg, ##ffffff 0%, ##ffffff 100%)',
               border: '1px solid #e2e8f0'
             }}>
               <Stack direction="row" spacing={2} alignItems="center">
@@ -385,6 +388,7 @@ const Layout = ({ children }: LayoutProps) => {
           </Typography>
           
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5 }}>
+            <ThemeToggle />
             {isAuthenticated ? (
               <>
                 <Avatar 
@@ -468,9 +472,9 @@ const Layout = ({ children }: LayoutProps) => {
         sx={{ 
           width: { md: currentDrawerWidth }, 
           flexShrink: { md: 0 },
-          transition: theme.transitions.create('width', {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
+          transition: muiTheme.transitions.create('width', { // Use MUI theme for transitions
+            easing: muiTheme.transitions.easing.sharp,
+            duration: muiTheme.transitions.duration.enteringScreen,
           }),
         }}
       >
@@ -503,9 +507,9 @@ const Layout = ({ children }: LayoutProps) => {
               width: currentDrawerWidth,
               top: { xs: 64, sm: 70 },
               height: { xs: 'calc(100% - 64px)', sm: 'calc(100% - 70px)' },
-              transition: theme.transitions.create('width', {
-                easing: theme.transitions.easing.sharp,
-                duration: theme.transitions.duration.enteringScreen,
+              transition: muiTheme.transitions.create('width', { // Use MUI theme for transitions
+                easing: muiTheme.transitions.easing.sharp,
+                duration: muiTheme.transitions.duration.enteringScreen,
               }),
               overflowX: 'hidden',
             },
@@ -554,9 +558,9 @@ const Layout = ({ children }: LayoutProps) => {
           minHeight: '100vh',
           display: 'flex',
           flexDirection: 'column',
-          transition: theme.transitions.create(['width', 'margin'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.enteringScreen,
+          transition: muiTheme.transitions.create(['width', 'margin'], { // Use MUI theme for transitions
+            easing: muiTheme.transitions.easing.sharp,
+            duration: muiTheme.transitions.duration.enteringScreen,
           }),
         }}
       >

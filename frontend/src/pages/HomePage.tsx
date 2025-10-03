@@ -80,51 +80,31 @@ const HomePage = () => {
         <Container>
           <Row className="hero-row align-items-center min-vh-75">
             {/* Left Content */}
-            <Col lg={6} xl={7} className="hero-content-col">
+            <Col lg={4} xl={5} className="hero-content-col">
               <div className="hero-content-wrapper">
-                <div className="hero-badge-wrapper">
-                  <span className="hero-badge animate-scale-in">
-                    <span className="badge-icon">✨</span>
-                    Welcome to Blog App
-                  </span>
-                </div>
+                
                 
                 <div className="hero-title-section">
                   <h1 className="hero-title animate-fade-in-up">
                     Discover Amazing
                     <span className="hero-title-highlight">Stories & Ideas</span>
                   </h1>
+                  <div className="hero-actions animate-fade-in-up">
+                    
+                    {!isAuthenticated && (
+                      <Button 
+                        as={Link} 
+                        to="/register" 
+                        variant="outline-light" 
+                        size="lg"
+                        className="btn-hero-secondary btn-info verified-badge-enhanced "
+                      >
+                        Join Community
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="hero-description">
-                  <p className="hero-subtitle animate-fade-in-up">
-                    Join our vibrant community of writers and readers. Share your thoughts, 
-                    discover new perspectives, and connect with like-minded people from around the world.
-                  </p>
-                </div>
-                
-                <div className="hero-actions animate-fade-in-up">
-                  <Button 
-                    as={Link} 
-                    to="/posts" 
-                    size="lg"
-                    className="btn-hero-primary"
-                  >
-                    <AutoStoriesIcon className="btn-icon" />
-                    Explore Posts
-                  </Button>
-                  {!isAuthenticated && (
-                    <Button 
-                      as={Link} 
-                      to="/register" 
-                      variant="outline-light" 
-                      size="lg"
-                      className="btn-hero-secondary"
-                    >
-                      Join Community
-                    </Button>
-                  )}
-                </div>
                 
                 {/* Hero Stats */}
                 <div className="hero-stats animate-fade-in-up">
@@ -147,7 +127,7 @@ const HomePage = () => {
             </Col>
             
             {/* Right Illustration */}
-            <Col lg={6} xl={5} className="hero-illustration-col">
+            <Col lg={8} xl={7} className="hero-illustration-col">
               <div className="hero-illustration-wrapper">
                 <div className="hero-main-visual">
                   {/* Floating Cards */}

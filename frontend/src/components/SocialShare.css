@@ -1,0 +1,215 @@
+.social-share-container {
+  position: relative;
+  display: inline-block;
+}
+
+.share-trigger-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  color: white;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.share-trigger-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  color: white;
+}
+
+.share-icon {
+  font-size: 18px !important;
+}
+
+.share-options-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  border-radius: 1.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e2e8f0;
+  padding: 1.5rem;
+  z-index: 1000;
+  min-width: 320px;
+  margin-top: 0.5rem;
+  backdrop-filter: blur(20px);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.share-options-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f5f9;
+}
+
+.share-options-header h6 {
+  margin: 0;
+  color: #1f2937;
+  font-weight: 700;
+}
+
+.close-btn {
+  color: #9ca3af;
+  font-size: 1.5rem;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+  transform: scale(1.1);
+}
+
+.share-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.share-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  border-width: 2px;
+  text-decoration: none;
+}
+
+.share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.share-btn.facebook {
+  border-color: #1877f2;
+  color: #1877f2;
+}
+
+.share-btn.facebook:hover {
+  background: #1877f2;
+  color: white;
+  box-shadow: 0 8px 20px rgba(24, 119, 242, 0.3);
+}
+
+.share-btn.twitter {
+  border-color: #1da1f2;
+  color: #1da1f2;
+}
+
+.share-btn.twitter:hover {
+  background: #1da1f2;
+  color: white;
+  box-shadow: 0 8px 20px rgba(29, 161, 242, 0.3);
+}
+
+.share-btn.linkedin {
+  border-color: #0077b5;
+  color: #0077b5;
+}
+
+.share-btn.linkedin:hover {
+  background: #0077b5;
+  color: white;
+  box-shadow: 0 8px 20px rgba(0, 119, 181, 0.3);
+}
+
+.share-btn.whatsapp {
+  border-color: #25d366;
+  color: #25d366;
+}
+
+.share-btn.whatsapp:hover {
+  background: #25d366;
+  color: white;
+  box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
+}
+
+.share-btn.telegram {
+  border-color: #0088cc;
+  color: #0088cc;
+}
+
+.share-btn.telegram:hover {
+  background: #0088cc;
+  color: white;
+  box-shadow: 0 8px 20px rgba(0, 136, 204, 0.3);
+}
+
+.share-btn.copy-link {
+  border-color: #6b7280;
+  color: #6b7280;
+}
+
+.share-btn.copy-link:hover {
+  background: #6b7280;
+  color: white;
+  box-shadow: 0 8px 20px rgba(107, 114, 128, 0.3);
+}
+
+.share-hashtags {
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .share-options-dropdown {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    transform: none;
+    margin: 0;
+    border-radius: 1.5rem 1.5rem 0 0;
+    min-width: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
+
+  .share-buttons-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .share-btn {
+    justify-content: center;
+    padding: 1rem;
+  }
+}
