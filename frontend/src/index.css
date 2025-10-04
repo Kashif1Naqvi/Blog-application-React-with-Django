@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import './styles/design-system.css';
 @import './styles/modern-components.css';
+@import './styles/text-fixes.css'; /* Import our fixes first */
 
 /* Color Palette - Consistent across the app */
 :root {
@@ -68,20 +69,20 @@
 }
 
 html {
+  font-size: 16px; /* Base font size for rem calculations */
   scroll-behavior: smooth;
 }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 50%, #fdf4ff 100%);
-  background-attachment: fixed;
-  color: #0f172a;
-  line-height: 1.7;
+  font-size: 0.875rem !important; /* Base font size */
+  line-height: 1.6 !important;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  transition: all 0.3s ease !important;
 }
 
 #root {
@@ -506,4 +507,15 @@ img {
 
 .spinner-border-primary {
   color: var(--color-primary) !important;
+}
+
+/* Fix remaining oversized elements */
+.display-1 { font-size: 2.5rem !important; }
+.display-2 { font-size: 2.25rem !important; }
+.display-3 { font-size: 2rem !important; }
+.display-4 { font-size: 1.75rem !important; }
+
+.lead {
+  font-size: 1rem !important;
+  font-weight: 500 !important;
 }

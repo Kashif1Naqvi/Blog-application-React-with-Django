@@ -205,7 +205,7 @@ const ProfilePage = () => {
         )}
       </Container>
 
-      {/* Enhanced About Section */}
+      {/* Compact About Section */}
       <Container className="about-section-container">
         <Card className="about-card-enhanced">
           <Card.Body className="about-content-enhanced">
@@ -214,7 +214,7 @@ const ProfilePage = () => {
                 <PersonIcon className="about-main-icon" />
               </div>
               <h4 className="about-title-enhanced">About {user.username}</h4>
-              <p className="about-subtitle">Get to know more about this amazing member</p>
+              <p className="about-subtitle">Member profile and details</p>
             </div>
             
             <div className="about-info-grid">
@@ -238,22 +238,6 @@ const ProfilePage = () => {
                 </div>
               </div>
 
-              <div className="info-item-enhanced bio-item">
-                <div className="info-icon-circle">
-                  <AutoFixHighIcon />
-                </div>
-                <div className="info-content">
-                  <h6 className="info-title">Bio</h6>
-                  <p className="info-value bio-enhanced">
-                    {user.bio || (
-                      <span className="no-bio">
-                        <em>No bio provided yet. Share something interesting about yourself!</em>
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-
               <div className="info-item-enhanced">
                 <div className="info-icon-circle">
                   <CalendarTodayIcon />
@@ -263,15 +247,31 @@ const ProfilePage = () => {
                   <p className="info-value">
                     {new Date().toLocaleDateString('en-US', {
                       year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
+                      month: 'long'
                     })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Bio Section - Only show if bio exists or as full-width item */}
+              <div className="info-item-enhanced bio-item">
+                <div className="info-icon-circle">
+                  <AutoFixHighIcon />
+                </div>
+                <div className="info-content">
+                  <h6 className="info-title">Bio</h6>
+                  <p className="info-value bio-enhanced">
+                    {user.bio || (
+                      <span className="no-bio">
+                        <em>No bio provided yet. Click "Update Profile" to add one!</em>
+                      </span>
+                    )}
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* Enhanced Call to Action */}
+            {/* Compact Call to Action */}
             <div className="cta-section-enhanced">
               <div className="cta-illustration">
                 <AutoFixHighIcon className="cta-icon" />
@@ -284,14 +284,13 @@ const ProfilePage = () => {
               <div className="cta-content-enhanced">
                 <h5 className="cta-title-enhanced">Complete Your Profile</h5>
                 <p className="cta-description-enhanced">
-                  Add a personal bio to tell your story and connect with the community! 
-                  Make your profile shine and stand out from the crowd.
+                  Add a personal bio and make your profile shine!
                 </p>
                 <Button 
-                  className="btn-info verified-badge-enhanced"
+                  className="btn-info verified-badge-enhanced cta-btn-enhanced"
                   onClick={() => setShowEditModal(true)}
                 >
-                  <AutoFixHighIcon className="btn-icon" />
+                  <AutoFixHighIcon style={{ fontSize: '18px' }} />
                   <span>Update Profile</span>
                   <div className="btn-glow"></div>
                 </Button>
