@@ -19,7 +19,7 @@ import { Box, Typography, Avatar, Chip, IconButton } from '@mui/material';
 import './ProfilePage.css';
 
 const ProfilePage = () => {
-  const { user, updateUser } = useAuth();
+  const { user, updateUserInfo } = useAuth();
   const [showEditModal, setShowEditModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,7 +47,7 @@ const ProfilePage = () => {
         }
         
         const updatedUser = await updateProfile(formData);
-        updateUser(updatedUser);
+        updateUserInfo(updatedUser);
         setSuccess('Profile updated successfully! ✨');
         setShowEditModal(false);
         

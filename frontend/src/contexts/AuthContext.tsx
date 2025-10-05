@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react';
-import { loginUser, logoutUser } from '../services/authService';
-import { getProfile } from '../services/userService';
+import { loginUser, logoutUser, registerUser } from '../services/authService';
+import { getProfile, updateProfile } from '../services/userService';
 
 interface User {
   username: string;
@@ -15,6 +15,7 @@ interface AuthContextType {
   loading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
+  register: (username: string, email: string, password: string, password2: string) => Promise<boolean | undefined>;
   updateUserInfo: () => Promise<void>;
 }
 
@@ -65,6 +66,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return false;
     }
   };
+
+  const register = async (username: string, email: string, password: string, password2: string) => {
+    try {
+      const result = await registerUser({
+        username,
+        email,
+        password,
+        password2,
+      })
+      if (result){
+        return true;
+      }
+
+    }
+    catch (error) {
+      console.log("Login error:", error);
+      return false;
+    }
+  };
   
   const logout = async () => {
     try {
@@ -89,6 +109,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         login,
         logout,
+        register,
         updateUserInfo,
       }}
     >

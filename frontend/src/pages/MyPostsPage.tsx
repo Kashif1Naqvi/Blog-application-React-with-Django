@@ -239,7 +239,7 @@ const MyPostsPage = () => {
         ) : (
           <Row className="posts-grid-enhanced">
             {filteredPosts.map((post, index) => (
-              <Col xl={4} lg={6} md={6} key={post.id} className="mb-4">
+              <Col xl={3} lg={3} md={3} key={post.id} className="mb-4">
                 <div className="post-card-enhanced" style={{ animationDelay: `${index * 100}ms` }}>
                   {/* Featured Image */}
                   <div className="post-image-container">

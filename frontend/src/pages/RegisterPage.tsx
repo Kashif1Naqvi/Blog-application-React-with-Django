@@ -29,7 +29,6 @@ const RegisterPage = () => {
     password: '',
     confirmPassword: '',
   });
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
@@ -55,7 +54,7 @@ const RegisterPage = () => {
     setError('');
 
     try {
-      await register(formData.username, formData.email, formData.password);
+      await register(formData.username, formData.email, formData.password, formData.confirmPassword);
       navigate('/');
     } catch (err: any) {
       const errorData = err.response?.data;
