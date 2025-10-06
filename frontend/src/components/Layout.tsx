@@ -337,12 +337,13 @@ const Layout = ({ children }: LayoutProps) => {
                 borderRadius: 2,
                 py: 1,
                 borderWidth: 2,
+                
                 '&:hover': {
                   borderWidth: 2,
                 }
               }}
             >
-              Logout
+              Logout 
             </Button>
           )}
         </Box>
@@ -388,26 +389,10 @@ const Layout = ({ children }: LayoutProps) => {
           </Typography>
           
           <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5 }}>
-            <ThemeToggle />
+            {/* <ThemeToggle /> */}
             {isAuthenticated ? (
               <>
-                <Avatar 
-                  sx={{ 
-                    width: 36, 
-                    height: 36, 
-                    bgcolor: 'rgba(255, 255, 255, 0.2)',
-                    border: '2px solid rgba(255, 255, 255, 0.3)',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 255, 255, 0.3)',
-                    }
-                  }}
-                  component={RouterLink}
-                  to="/profile"
-                >
-                  {user?.username?.charAt(0).toUpperCase()}
-                </Avatar>
+                
                 <Button 
                   color="inherit" 
                   onClick={() => logout()}
@@ -416,6 +401,7 @@ const Layout = ({ children }: LayoutProps) => {
                     borderRadius: 2,
                     px: 2.5,
                     bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    color:"whitesmoke", 
                     '&:hover': { 
                       bgcolor: 'rgba(255, 255, 255, 0.2)',
                     }
@@ -434,6 +420,7 @@ const Layout = ({ children }: LayoutProps) => {
                   sx={{ 
                     borderRadius: 2,
                     px: 2.5,
+                    color: "whitesmoke",
                     '&:hover': { 
                       bgcolor: 'rgba(255, 255, 255, 0.1)',
                     }
@@ -442,15 +429,15 @@ const Layout = ({ children }: LayoutProps) => {
                   Login
                 </Button>
                 <Button 
-                  variant="contained"
+                  color='info'
                   component={RouterLink} 
                   to="/register"
                   startIcon={<AppRegistrationIcon />}
                   sx={{ 
                     borderRadius: 2,
                     px: 2.5,
-                    bgcolor: 'white',
-                    color: 'primary.main',
+                    bgcolor: 'rgba(255, 255, 255, 0.1)',
+                    color: 'whitesmoke',
                     '&:hover': { 
                       bgcolor: 'rgba(255, 255, 255, 0.9)',
                       transform: 'translateY(-2px)',
@@ -527,21 +514,7 @@ const Layout = ({ children }: LayoutProps) => {
               zIndex: 1,
             }}
           >
-            <IconButton
-              onClick={handleDesktopToggle}
-              sx={{
-                bgcolor: 'primary.main',
-                color: 'white',
-                width: 32,
-                height: 32,
-                boxShadow: 2,
-                '&:hover': {
-                  bgcolor: 'primary.dark',
-                },
-              }}
-            >
-              {desktopOpen ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-            </IconButton>
+            
           </Box>
         </Drawer>
       </Box>

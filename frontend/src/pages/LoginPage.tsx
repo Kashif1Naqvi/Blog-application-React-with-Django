@@ -271,22 +271,6 @@ const LoginPage = () => {
                   </Button>
                 </Form>
 
-                {/* Social Login Options */}
-                <div className="auth-divider">
-                  <span>or continue with</span>
-                </div>
-
-                <div className="social-login-buttons">
-                  <Button variant="outline-secondary" className="social-btn google-btn" disabled>
-                    <img src="/images/google-icon.svg" alt="Google" className="social-icon" />
-                    Google
-                  </Button>
-                  <Button variant="outline-secondary" className="social-btn github-btn" disabled>
-                    <img src="/images/github-icon.svg" alt="GitHub" className="social-icon" />
-                    GitHub
-                  </Button>
-                </div>
-
                 {/* Register Link */}
                 <div className="auth-switch-link">
                   <p>

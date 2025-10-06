@@ -491,68 +491,207 @@
   left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 3;
-  pointer-events: none;
+  z-index: 5;
+  pointer-events: none; /* CRITICAL: Prevents icon from stealing focus */
+  color: #6c757d;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .input-icon {
-  font-size: 20px !important;
-  color: #9ca3af;
-  transition: color 0.3s ease;
+  font-size: 1.2rem !important;
 }
 
-.floating-label-enhanced {
-  position: relative;
-}
-
-.form-control-enhanced {
-  background: rgba(255, 255, 255, 0.9) !important;
-  border: 2px solid #e5e7eb !important;
-  border-radius: 1rem !important;
-  padding: 1rem 1rem 1rem 3rem !important;
-  font-size: 1rem !important;
-  font-weight: 500 !important;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05) !important;
-}
-
-.form-control-enhanced:focus {
-  background: white !important;
-  border-color: #667eea !important;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1), 0 8px 20px rgba(102, 126, 234, 0.15) !important;
-  transform: translateY(-2px) !important;
-}
-
-.form-control-enhanced:focus + .input-icon-wrapper .input-icon {
-  color: #667eea;
-}
-
-.floating-label-enhanced label {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%) !important;
-  color: #6b7280 !important;
-  font-weight: 600 !important;
-  padding: 0.25rem 0.75rem !important;
-  border-radius: 0.5rem !important;
-  font-size: 0.875rem !important;
-  margin-left: 2.5rem !important;
-}
-
+/* Password Toggle Button - Position correctly */
 .password-toggle-btn {
   position: absolute;
-  right: 1rem;
+  right: 0.75rem;
   top: 50%;
   transform: translateY(-50%);
-  z-index: 3;
+  z-index: 6;
 }
 
 .toggle-visibility-btn {
-  color: #9ca3af !important;
-  transition: all 0.3s ease !important;
+  padding: 0.25rem !important;
+  min-width: 32px !important;
+  width: 32px !important;
+  height: 32px !important;
+  color: #6c757d !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease;
 }
 
 .toggle-visibility-btn:hover {
   color: #667eea !important;
   background: rgba(102, 126, 234, 0.1) !important;
+  transform: scale(1.1);
+}
+
+.toggle-visibility-btn:focus {
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* === FLOATING LABEL ENHANCED FIX === */
+.floating-label-enhanced {
+  position: relative;
+  width: 100%;
+}
+
+.floating-label-enhanced > .form-control {
+  padding-left: 3.5rem !important; /* Space for icon */
+  padding-right: 3.5rem !important; /* Space for password toggle */
+  padding-top: 1.5rem !important;
+  padding-bottom: 0.5rem !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  background-color: #fff !important;
+  transition: all 0.2s ease !important;
+  height: auto !important;
+  min-height: 58px !important;
+}
+
+.floating-label-enhanced > label {
+  padding-left: 3.5rem !important; /* Align with input padding */
+  padding-right: 3.5rem !important;
+  color: #6c757d !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+  background: transparent !important;
+  border: none !important;
+  font-size: 0.9rem !important;
+}
+
+/* === FORM CONTROL ENHANCED === */
+.form-control-enhanced {
+  padding-left: 3.5rem !important;
+  padding-right: 3.5rem !important;
+  padding-top: 1.5rem !important;
+  padding-bottom: 0.5rem !important;
+  border: 2px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  background-color: #fff !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+  height: auto !important;
+  min-height: 58px !important;
+}
+
+.form-control-enhanced:hover {
+  border-color: #cbd5e0 !important;
+}
+
+.form-control-enhanced:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+  outline: none !important;
+  background-color: #fff !important;
+  /* PREVENT ANY BLUR TRANSITIONS */
+  transition: border-color 0.1s ease, box-shadow 0.1s ease !important;
+}
+
+.form-control-enhanced:focus-visible {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+  outline: none !important;
+}
+
+/* === PREVENT FOCUS LOSS === */
+.form-control-enhanced:focus + .password-toggle-btn {
+  z-index: 7;
+}
+
+.form-group-enhanced:focus-within .input-icon-wrapper {
+  color: #667eea;
+}
+
+/* === FLOATING LABEL STATES === */
+.floating-label-enhanced .form-control:focus ~ label,
+.floating-label-enhanced .form-control:not(:placeholder-shown) ~ label {
+  transform: scale(0.85) translateY(-0.5rem) translateX(0.15rem) !important;
+  color: #667eea !important;
+  font-weight: 600 !important;
+}
+
+.floating-label-enhanced .form-control:focus ~ label {
+  color: #667eea !important;
+}
+
+/* === DISABLE PROBLEMATIC BOOTSTRAP ANIMATIONS === */
+.floating-label-enhanced .form-control,
+.floating-label-enhanced label {
+  /* Remove any transform animations that might cause blur */
+  will-change: auto !important;
+}
+
+/* === FORM FIELD CONTAINER === */
+.auth-form-enhanced .form-group-enhanced {
+  /* Ensure stable positioning */
+  contain: layout style !important;
+}
+
+/* === PASSWORD FIELD SPECIFIC === */
+.form-group-enhanced:has(.password-toggle-btn) .form-control-enhanced {
+  padding-right: 3.5rem !important;
+}
+
+/* === ENSURE NO INTERFERENCE === */
+.floating-label-enhanced .form-control-enhanced:focus {
+  /* Force focus state and prevent any blur */
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+  outline: none !important;
+  z-index: 2 !important;
+}
+
+/* === PREVENT EVENT BUBBLING ISSUES === */
+.input-icon-wrapper,
+.input-icon {
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+.password-toggle-btn .toggle-visibility-btn {
+  /* Ensure password toggle works but doesn't steal focus */
+  pointer-events: auto !important;
+}
+
+/* === MOBILE FIXES === */
+@media (max-width: 768px) {
+  .form-control-enhanced {
+    font-size: 16px !important; /* Prevents zoom on iOS */
+  }
+  
+  .floating-label-enhanced > label {
+    font-size: 14px !important;
+  }
+}
+
+/* === OVERRIDE ANY CONFLICTING STYLES === */
+.auth-form-enhanced input:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25) !important;
+  outline: none !important;
+}
+
+/* === ENSURE STABLE LAYOUT === */
+.floating-label-enhanced {
+  /* Prevent layout shifts */
+  min-height: 58px;
+  display: block;
+}
+
+.form-group-enhanced {
+  /* Prevent collapsing */
+  min-height: 58px;
+  overflow: visible;
 }
 
 /* === FORM OPTIONS === */

@@ -305,8 +305,8 @@ const ProfilePage = () => {
         show={showEditModal} 
         onHide={() => setShowEditModal(false)}
         centered
-        size="lg"
-        className="edit-modal-enhanced"
+        size="sm"
+        className="edit-modal-enhanced m-4"
       >
         <div className="modal-content-enhanced">
           <Modal.Header className="modal-header-enhanced">

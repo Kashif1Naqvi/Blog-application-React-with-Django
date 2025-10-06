@@ -534,18 +534,14 @@ const PostDetailPage = () => {
           {post.is_bookmarked ? 'Saved' : 'Save'}
         </Button>
         
-        {/* KEEP EXISTING SHARE BUTTON */}
-        <Button variant="outlined" startIcon={<ShareIcon />}>
-          Share
-        </Button>
+        {/* ENHANCED SHARE FUNCTIONALITY */}
+        <SocialShare
+          title={post?.title || ''}
+          url={window.location.href}
+          description={post?.excerpt}
+          hashtags={post?.tags.map(tag => tag.name) || []}
+        />
       </Stack>
-
-      <SocialShare
-        title={post?.title || ''}
-        url={window.location.href}
-        description={post?.excerpt}
-        hashtags={post?.tags.map(tag => tag.name) || []}
-      />
 
       <Divider sx={{ mb: 4 }} />
 
